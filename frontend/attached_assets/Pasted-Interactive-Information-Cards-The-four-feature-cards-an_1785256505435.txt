@@ -1,0 +1,411 @@
+Interactive Information Cards
+
+The four feature cards and the four analysis cards should not only have hover animations.
+
+Each card must be clickable.
+
+When clicked, a premium animated modal should appear in the centre of the screen.
+
+The modal should feel like Apple's product pages, Linear, or Notion AI.
+
+Do not use a plain dialog box.
+
+Instead use:
+
+Glassmorphism
+Frosted blur background
+Soft shadows
+Animated entrance
+Rounded corners
+Gradient borders
+Smooth scaling animation
+Background blur
+Click outside to close
+ESC key closes modal
+
+Animation:
+
+Fade in
+Scale from 95% → 100%
+Background darkens smoothly
+Close animation reverses
+
+Use Framer Motion for all modal transitions.
+
+Modal Layout
+
+Each popup should have:
+
+Large animated icon
+
+Title
+
+Short introduction
+
+How it works
+
+Why it matters
+
+Example
+
+Privacy Note
+
+Beautiful illustration or subtle animated SVG.
+
+The content should be written for ordinary internet users, not AI researchers.
+
+Avoid technical terminology.
+
+No model names.
+
+No neural network terminology.
+
+Explain everything in simple language.
+
+CARD 1
+Multiple Sources of Evidence
+
+Modal Title
+
+Looking at More Than One Clue
+
+Introduction
+
+VERITAS doesn't rely on just one signal to decide whether something is real or fake. Instead, it examines several different types of evidence before reaching a conclusion.
+
+How it Works
+
+When you upload content, VERITAS looks at:
+
+• The visual appearance of images and videos
+
+• Movement between video frames
+
+• Audio quality and speech characteristics
+
+• Information available from trusted online sources
+
+Each source provides a different piece of the puzzle.
+
+By combining them, VERITAS can make a more balanced judgement.
+
+Why This Matters
+
+Some fake content looks convincing visually but contains unusual audio.
+
+Others have realistic audio but inconsistent movement.
+
+Looking at multiple clues helps reduce mistakes.
+
+Example
+
+Imagine a video where:
+
+The person's face looks realistic.
+
+The voice sounds artificial.
+
+The original source cannot be verified.
+
+Taken together, these signs make the content more suspicious than any one clue alone.
+
+Privacy Note
+
+Your uploaded content is analysed only to generate the requested result.
+
+CARD 2
+Everything Considered Together
+
+Modal Title
+
+One Clear Answer, Not Four Separate Opinions
+
+Introduction
+
+Instead of showing separate results for each type of analysis, VERITAS combines all findings into one easy-to-understand explanation.
+
+How it Works
+
+Different analyses may sometimes disagree.
+
+For example,
+
+Visual inspection may suggest the content appears authentic.
+
+Audio analysis may detect unusual speech patterns.
+
+Context verification may find conflicting information online.
+
+VERITAS weighs these observations together before producing a final explanation.
+
+Why This Matters
+
+People shouldn't need to understand technical reports.
+
+VERITAS simplifies everything into one final conclusion with supporting reasoning.
+
+Example
+
+Rather than saying:
+
+Visual: OK
+
+Audio: Suspicious
+
+Context: Unknown
+
+VERITAS explains:
+
+"While the visuals appear natural, unusual audio characteristics and missing supporting context reduce confidence in the authenticity of this content."
+
+CARD 3
+Easy-to-Understand Explanations
+
+Modal Title
+
+Clear Answers Without Technical Jargon
+
+Introduction
+
+AI tools often produce confusing scores and unfamiliar terminology.
+
+VERITAS explains its findings in plain language.
+
+How it Works
+
+Every result includes:
+
+What was observed
+
+Why it matters
+
+How those observations influenced the conclusion
+
+Suggestions for interpreting the result
+
+Why This Matters
+
+People should understand why a conclusion was reached instead of simply accepting an automated decision.
+
+Example
+
+Instead of:
+
+"Inference confidence = 0.91"
+
+VERITAS says:
+
+"We found several visual and audio inconsistencies that are commonly associated with AI-generated media."
+
+CARD 4
+Honest About Uncertainty
+
+Modal Title
+
+Sometimes the Answer Isn't Certain
+
+Introduction
+
+No automated system can guarantee perfect accuracy.
+
+VERITAS communicates uncertainty honestly.
+
+How it Works
+
+Instead of pretending every answer is certain, VERITAS uses simple confidence levels.
+
+High Confidence
+
+Moderate Confidence
+
+Low Confidence
+
+These indicate how strongly the available evidence supports the conclusion.
+
+Why This Matters
+
+Being transparent helps users make informed decisions rather than relying blindly on automation.
+
+Example
+
+A heavily compressed video with poor audio may not contain enough information for a confident decision.
+
+In those situations, VERITAS clearly explains why the result is less certain.
+
+ANALYSIS CARD POPUPS
+
+Each of the four animated analysis cards should also open a modal with more information.
+
+Visual Analysis
+
+Modal Title
+
+Visual Analysis
+
+Hero Illustration
+
+Animated face mesh or image grid.
+
+Introduction
+
+VERITAS carefully examines images and individual video frames for visual clues that may indicate digital manipulation.
+
+It looks for subtle inconsistencies that are often difficult to notice with the naked eye.
+
+Checks Performed
+
+• Facial proportions and alignment
+
+• Lighting and shadows
+
+• Skin texture consistency
+
+• Reflections
+
+• Blending around edges
+
+• Image quality variations
+
+• Background consistency
+
+Why It Matters
+
+Many manipulated images contain tiny imperfections that become noticeable when examined closely.
+
+Example
+
+An image may appear realistic at first glance but contain inconsistent lighting around the face or blurred edges that suggest digital editing.
+
+Motion Analysis
+
+Modal Title
+
+Motion Analysis
+
+Hero Illustration
+
+Animated timeline with moving frames.
+
+Introduction
+
+Videos are made of many individual frames.
+
+VERITAS studies how movement changes across those frames.
+
+Checks Performed
+
+• Natural facial movement
+
+• Lip synchronisation
+
+• Eye blinking
+
+• Head movement
+
+• Motion smoothness
+
+• Object consistency
+
+• Scene transitions
+
+Why It Matters
+
+AI-generated videos sometimes produce small visual glitches that appear only while the video is moving.
+
+Example
+
+A person's face may briefly flicker or change shape between frames even though the overall video appears realistic.
+
+Audio Analysis
+
+Modal Title
+
+Audio Analysis
+
+Hero Illustration
+
+Animated waveform.
+
+Introduction
+
+VERITAS analyses speech and sound for signs that the audio may have been generated, cloned, or modified.
+
+Checks Performed
+
+• Voice consistency
+
+• Speech rhythm
+
+• Background sounds
+
+• Unusual distortions
+
+• Abrupt transitions
+
+• Overall audio quality
+
+Why It Matters
+
+Synthetic voices often contain subtle patterns that differ from naturally recorded speech.
+
+Example
+
+A voice may sound convincing but contain repeating background noise or unusually consistent pronunciation.
+
+Context Verification
+
+Modal Title
+
+Context Verification
+
+Hero Illustration
+
+Animated network graph.
+
+Introduction
+
+VERITAS looks beyond the media itself.
+
+It compares available information with trusted online sources to determine whether the content matches what it claims to be.
+
+Checks Performed
+
+• Source credibility
+
+• Publication information
+
+• Metadata consistency
+
+• Related reports
+
+• Publicly available references
+
+• Timeline consistency
+
+Why It Matters
+
+Even authentic media can be misleading if shared with false claims or taken out of context.
+
+Example
+
+A genuine photograph from several years ago may be reposted during a current event with a misleading description.
+
+Premium UI Features
+
+Make the modal feel premium by adding:
+
+Animated gradient header
+Floating particles behind the icon
+Animated SVG illustration at the top
+Section dividers with subtle glow
+Accordion for "Learn More"
+Smooth scrolling if content exceeds viewport
+Sticky close button
+Progress indicator showing which card is open (1/4 or 2/4)
+Keyboard navigation (← →) to switch between cards
+Swipe gestures on mobile
+Framer Motion shared layout animations
+Glass reflections that react slightly to cursor movement
+Optional "Back to Overview" button at the bottom
+
+The overall experience should feel like an interactive product showcase rather than a documentation page, encouraging users to explore how VERITAS works while keeping every explanation approachable and free of unnecessary technical jargon.

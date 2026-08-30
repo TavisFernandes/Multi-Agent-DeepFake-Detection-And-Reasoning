@@ -1,0 +1,50 @@
+Page Transition Animations (Landing Page ↔ Launch Console)
+
+The transition between the Landing Page and the Launch Console should feel cinematic and premium. It should not instantly switch pages or simply fade.
+
+Launch Console Transition
+
+When the user clicks the "Launch Console" button:
+
+Animate the entire landing page into the console instead of performing an abrupt route change.
+Use Framer Motion for page transitions.
+Duration: 800–1200ms.
+The transition should feel fluid, elegant, and intentional.
+Suggested Animation Sequence
+The Launch Console button subtly expands and emits a soft cyan/purple glow.
+The background neural network and particles accelerate slightly.
+The hero content smoothly fades upward while becoming slightly blurred.
+A translucent glass layer expands from the centre of the screen, as if opening a portal into the workspace.
+The camera performs a gentle zoom-in (approximately 5–8%).
+The screen briefly fills with a moving gradient or animated light sweep.
+The console interface slides into view while fading from 0% to 100% opacity.
+The chat interface, upload panel, and navigation animate in sequentially with a slight stagger (80–120ms delay between elements).
+
+The result should feel like the user is entering an intelligent workspace, not simply navigating to another page.
+
+Return to Home Transition
+
+Inside the console, include a Back to Home button in the navigation/header.
+
+When clicked:
+
+Reverse the experience with the same level of polish.
+Do not instantly navigate back.
+Suggested Animation Sequence
+The console slightly zooms out.
+The chat messages softly fade and blur.
+Upload cards and panels slide away gracefully.
+The background transitions into the animated landing page.
+The hero title fades back in with its original entrance animation.
+The navigation bar reappears smoothly.
+The particle background slows back to its normal motion.
+
+The transition should make it feel like the user is leaving the analysis workspace and returning to the public website.
+
+Transition Requirements
+Use Framer Motion's AnimatePresence for route transitions.
+Preserve smooth scrolling and avoid white flashes during navigation.
+Keep the animated background persistent between pages where possible for visual continuity.
+Maintain 60 FPS animations.
+Respect the user's prefers-reduced-motion setting by providing a simplified fade transition.
+The transitions should feel comparable to premium experiences seen in Apple, Linear, Arc Browser, Vercel, and Notion, prioritising elegance over excessive effects.
