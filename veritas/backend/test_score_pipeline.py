@@ -199,10 +199,14 @@ else:
               "T11: Audio Analysis unavailable exactly when it has no verdict")
         check(("Audio Analysis" in api_contributing) == audio_has_verdict,
               "T12: Audio Analysis contributes exactly when it has a verdict")
-        check("Spatial Analysis" in api_contributing,
-              "T13: Spatial Analysis in contributing_agents")
-        check("Temporal Analysis" in api_contributing,
-              "T14: Temporal Analysis in contributing_agents")
+        # 00025_fake.mp4 is a colour-bar test pattern: no face, so the visual agents report no_face.
+        for tag, name in (("T13", "Spatial Analysis"), ("T14", "Temporal Analysis")):
+            has_verdict = agents_by_name[name].get("is_fake") is not None
+            check((name in api_contributing) == has_verdict,
+                  f"{tag}: {name} contributes exactly when it has a verdict",
+                  f"status={agents_by_name[name].get('status')}")
+        check(analyse_data.get("verdict") != "AUTHENTIC" or agents_by_name["Spatial Analysis"].get("status") != "no_face",
+              "T14b: no face -> verdict is never AUTHENTIC", f"verdict={analyse_data.get('verdict')}")
 
     except Exception as exc:
         fail(f"/analyse request failed: {exc}")
@@ -257,8 +261,8 @@ else:
 
         check(("Audio Analysis" in stream_unavailable) == (au_stream.get("is_fake") is None),
               "T22: stream Audio is unavailable exactly when it has no verdict (is_fake None)")
-        check("Spatial Analysis" in stream_contributing,
-              "T23: stream Spatial Analysis in contributing_agents")
+        check(("Spatial Analysis" in stream_contributing) == (stream_agents.get("Spatial Analysis", {}).get("is_fake") is not None),
+              "T23: stream Spatial Analysis contributes exactly when it has a verdict")
 
     except Exception as exc:
         fail(f"/analyse/stream request failed: {exc}")

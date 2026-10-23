@@ -49,6 +49,8 @@ import torch
 import torch.nn as nn
 from torchvision.models.video import r3d_18
 
+import face_crop
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -191,25 +193,28 @@ def load_model() -> None:
 # Frame extraction
 # ---------------------------------------------------------------------------
 
-def _extract_frames(video_path: str) -> Optional[np.ndarray]:
+def _extract_frames(video_path: str) -> tuple[Optional[np.ndarray], Optional[str]]:
     """
     Sample _NUM_FRAMES frames at ~_TARGET_FPS from a window centred in the
-    video — the same indices train_temporal_lc.py used.
+    video — the same indices train_temporal_lc.py used — and crop all of them
+    with one face box found on the middle frame (training clips are face tracks).
 
-    Returns np.ndarray (16, 3, 112, 112) float32 normalised, or None on failure.
+    Returns (np.ndarray (16, 3, 112, 112) float32 normalised, face note), or
+    (None, reason) when no usable face was found, or (None, None) when the
+    video cannot be read.
     """
     t0 = time.perf_counter()
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         logger.warning("Cannot open video: %s", video_path)
-        return None
+        return None, None
 
     try:
         fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         if total_frames <= 0:
             logger.warning("Video reports 0 frames: %s", video_path)
-            return None
+            return None, None
 
         step = max(1, int(round(fps / _TARGET_FPS)))
         start = max(0, (total_frames - _NUM_FRAMES * step) // 2)
@@ -223,34 +228,41 @@ def _extract_frames(video_path: str) -> Optional[np.ndarray]:
             cap.set(cv2.CAP_PROP_POS_FRAMES, float(idx))
             ret, bgr = cap.read()
             if ret and bgr is not None:
-                rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
-                rgb = cv2.resize(rgb, _FRAME_SIZE, interpolation=cv2.INTER_LINEAR)
-                last_good = rgb
+                last_good = bgr
             else:
                 if last_good is None:
                     logger.debug("Frame %d unreadable, no fallback yet.", idx)
                     continue
-                rgb = last_good  # repeat last good frame
+                bgr = last_good  # repeat last good frame
 
-            frames.append(rgb)
+            frames.append(bgr)
 
         if not frames:
             logger.warning("No frames could be read from %s", video_path)
-            return None
+            return None, None
 
         # Pad to exactly _NUM_FRAMES by repeating the last frame
         while len(frames) < _NUM_FRAMES:
             frames.append(frames[-1])
 
+        # shortcut: one box from the middle frame; a face that moves a lot drifts out of it — per-frame tracking if that shows up.
+        box, note = face_crop.detect(frames[_NUM_FRAMES // 2])
+        if box is None:
+            return None, note
+        frames = [
+            cv2.resize(cv2.cvtColor(face_crop.crop(f, box), cv2.COLOR_BGR2RGB), _FRAME_SIZE, interpolation=cv2.INTER_LINEAR)
+            for f in frames[:_NUM_FRAMES]
+        ]
+
         # (16, H, W, 3) → normalise → (16, 3, H, W)
-        stack = np.stack(frames[:_NUM_FRAMES]).astype(np.float32) / 255.0
+        stack = np.stack(frames).astype(np.float32) / 255.0
         stack = (stack - _MEAN) / _STD                # broadcast over (H, W, 3)
         stack = stack.transpose(0, 3, 1, 2)           # (16, 3, 112, 112)
 
         elapsed_ms = (time.perf_counter() - t0) * 1000
         logger.debug("Frame decode: %.1f ms  frames=%d  video_fps=%.1f",
                      elapsed_ms, len(frames), fps)
-        return stack
+        return stack, note
 
     finally:
         cap.release()
@@ -321,9 +333,18 @@ def run_temporal_agent(video_path: str) -> dict:
     try:
         # ── 1. Frame extraction ───────────────────────────────────────────────
         t_decode = time.perf_counter()
-        frames_np = _extract_frames(video_path)
+        frames_np, face_note = _extract_frames(video_path)
         decode_ms = (time.perf_counter() - t_decode) * 1000
 
+        if frames_np is None and face_note:
+            return {
+                "agent":       "Temporal Analysis",
+                "status":      "no_face",
+                "confidence":  0.0,
+                "is_fake":     None,
+                "finding":     f"{face_note}. The temporal model needs a clearly visible face, so no score was produced.",
+                "gradcam_b64": None,
+            }
         if frames_np is None:
             return {
                 "agent":       "Temporal Analysis",

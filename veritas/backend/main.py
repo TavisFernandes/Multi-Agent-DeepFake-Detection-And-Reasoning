@@ -35,6 +35,7 @@ from temporal_agent import run_temporal_agent
 from audio_agent import run_audio_agent
 from mock_agents import context_agent_result
 import fusion_policy
+from decision_contract import VERDICT_UNCERTAIN_FULL, enrich_decision_fields
 from fusion_policy import (
     get_fusion_policy,
     compute_verdict_corrected_fixed,
@@ -327,7 +328,7 @@ def _build_agents(tmp_path: str, resolved_media_type: str) -> list[dict]:
         if frame_path:
             try:
                 s_result = spatial_agent.predict(frame_path)
-                s_result["status"] = "trained"
+                s_result.setdefault("status", "trained")  # keep "no_face" from predict()
             except Exception as exc:
                 logger.error("Spatial agent prediction error: %s", exc)
                 s_result = {
@@ -356,7 +357,7 @@ def _build_agents(tmp_path: str, resolved_media_type: str) -> list[dict]:
     else:
         try:
             s_result = spatial_agent.predict(tmp_path)
-            s_result["status"] = "trained"
+            s_result.setdefault("status", "trained")  # keep "no_face" from predict()
         except Exception as exc:
             logger.error("Spatial agent prediction error: %s", exc)
             s_result = {
@@ -436,6 +437,12 @@ def _compute_verdict(
         logger.warning("Unknown fusion mode '%s', defaulting to corrected fixed-weight fusion.", mode)
         overall, verdict, contributing, unavailable, details = compute_verdict_corrected_fixed(agents, media_type)
 
+    # No usable face means the visual stream was never checked, so the result must not read as AUTHENTIC.
+    if verdict == "AUTHENTIC" and any(a.get("status") == "no_face" for a in agents):
+        verdict = VERDICT_UNCERTAIN_FULL
+        details["verdict"] = verdict
+        enrich_decision_fields(details)
+
     if return_details:
         return overall, verdict, contributing, unavailable, details
     return overall, verdict, contributing, unavailable
@@ -475,7 +482,7 @@ async def _stream_agents(
                 s_result = await asyncio.get_event_loop().run_in_executor(
                     None, spatial_agent.predict, frame_path
                 )
-                s_result["status"] = "trained"
+                s_result.setdefault("status", "trained")  # keep "no_face" from predict()
             except Exception as exc:
                 logger.error("Spatial stream prediction error: %s", exc)
                 s_result = {
@@ -507,7 +514,7 @@ async def _stream_agents(
             s_result = await asyncio.get_event_loop().run_in_executor(
                 None, spatial_agent.predict, tmp_path
             )
-            s_result["status"] = "trained"
+            s_result.setdefault("status", "trained")  # keep "no_face" from predict()
         except Exception as exc:
             logger.error("Spatial stream prediction error: %s", exc)
             s_result = {

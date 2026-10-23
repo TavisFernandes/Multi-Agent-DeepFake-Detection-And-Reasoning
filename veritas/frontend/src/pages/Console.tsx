@@ -661,7 +661,7 @@ function Bars({ rows }: { rows: [string, number][] }) {
 // ----------------------------------------------------------------------
 // Agent card
 // ----------------------------------------------------------------------
-const UNAVAILABLE_STATUSES = ['untrained', 'mocked', 'no_audio', 'not_applicable', 'unavailable', 'error', 'failed'];
+const UNAVAILABLE_STATUSES = ['untrained', 'mocked', 'no_audio', 'no_face', 'not_applicable', 'unavailable', 'error', 'failed'];
 
 function AgentCard({
   agent, index, analysing, weight,

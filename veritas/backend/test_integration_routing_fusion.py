@@ -128,14 +128,19 @@ if os.path.exists(test_wav):
 if os.path.exists(test_no_audio):
     no_audio_agents = _build_agents(test_no_audio, "video")
     s, t, a, c = no_audio_agents
-    record("No-audio video -> Spatial executes", s.get("is_fake") is not None)
-    record("No-audio video -> Temporal executes", t.get("is_fake") is not None)
+    # test_no_audio.mp4 is a colour-bar test pattern: the visual agents run and report no_face.
+    record("No-audio video -> Spatial executes", s.get("status") in ("trained", "no_face"))
+    record("No-audio video -> Temporal executes", t.get("status") in ("trained", "no_face"))
     record("No-audio video -> Audio detects no audio stream", a.get("status") == "no_audio" and a.get("is_fake") is None)
     record("No-audio video -> Context cannot evaluate (requires audio)", c.get("is_fake") is None)
 
     score, verdict, contributing, unavailable = _compute_verdict(no_audio_agents)
-    record("No-audio video -> Only Spatial and Temporal contribute", set(contributing) == {"Spatial Analysis", "Temporal Analysis"})
-    record("No-audio video -> Audio and Context excluded from weights", set(unavailable) == {"Audio Analysis", "Context Verification"})
+    record("No-audio video -> Only visual agents with a verdict contribute",
+           set(contributing) == {x["agent"] for x in (s, t) if x.get("is_fake") is not None})
+    record("No-audio video -> Audio excluded, Context never contributes",  # legacy mode lists it as unavailable
+           "Audio Analysis" in unavailable and "Context Verification" not in contributing)
+    record("No-audio video -> never AUTHENTIC without a face",
+           verdict != "AUTHENTIC" or "no_face" not in (s.get("status"), t.get("status")))
 
 
 # ---------------------------------------------------------------------------

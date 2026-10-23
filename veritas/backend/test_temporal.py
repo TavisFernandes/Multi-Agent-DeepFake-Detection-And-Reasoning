@@ -193,17 +193,15 @@ try:
     check('agent == "Temporal Analysis"', result.get("agent") == "Temporal Analysis")
     check("confidence in [0,1]", 0.0 <= result.get("confidence", -1) <= 1.0,
           str(result.get("confidence")))
-    check("is_fake is bool", isinstance(result.get("is_fake"), bool))
     check("finding is non-empty str",
           isinstance(result.get("finding"), str) and len(result["finding"]) > 0)
     check("gradcam_b64 is None", result.get("gradcam_b64") is None)
 
-    # Verify threshold logic
-    conf = result["confidence"]
-    expected_fake = conf >= temporal_agent._DECISION_THRESHOLD
-    check(f"is_fake consistent with threshold ({temporal_agent._DECISION_THRESHOLD:.2f})",
-          result["is_fake"] == expected_fake,
-          f"conf={conf:.4f}  is_fake={result['is_fake']}  expected={expected_fake}")
+    # Random-noise video has no face: no score may be invented (face scoring: test_face_crop.py).
+    check("noise video -> status no_face, is_fake None",
+          result.get("status") == "no_face" and result.get("is_fake") is None,
+          f"status={result.get('status')} is_fake={result.get('is_fake')}")
+    check("noise video -> confidence 0.0", result["confidence"] == 0.0, str(result["confidence"]))
 
 finally:
     if os.path.exists(tmp_vid):

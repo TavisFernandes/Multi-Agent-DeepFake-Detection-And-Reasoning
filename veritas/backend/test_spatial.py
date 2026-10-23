@@ -264,13 +264,13 @@ try:
           f"missing: {required_keys - result.keys()}")
     check('agent == "Spatial Analysis"', result["agent"] == "Spatial Analysis")
     check('color == "cyan"',             result["color"] == "cyan")
-    check("is_fake is bool",             isinstance(result["is_fake"], bool))
     check("finding is non-empty str",    isinstance(result["finding"], str) and len(result["finding"]) > 0)
 
-    # Decision threshold
-    expected_fake = fake_p >= 0.50
-    check(f"is_fake matches fake_prob >= 0.50 threshold", is_fk == expected_fake,
-          f"fake_prob={fake_p:.4f}, is_fake={is_fk}, expected={expected_fake}")
+    # Random noise has no face: the agent must say so instead of inventing a score
+    # (scoring on a real face is covered by test_face_crop.py).
+    check("noise image -> status no_face, is_fake None", result.get("status") == "no_face" and is_fk is None,
+          f"status={result.get('status')} is_fake={is_fk}")
+    check("noise image -> no score invented", fake_p == 0.0, f"confidence={fake_p}")
 
 except Exception as e:
     check("Inference completes without error", False, str(e))

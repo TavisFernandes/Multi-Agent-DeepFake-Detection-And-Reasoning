@@ -52,6 +52,8 @@ from PIL import Image
 from torchvision import transforms
 from torchvision.models import efficientnet_b0
 
+import face_crop
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -345,7 +347,19 @@ def predict(image_path: str) -> dict:
         )
 
     try:
-        img = Image.open(image_path).convert("RGB")
+        rgb = np.asarray(Image.open(image_path).convert("RGB"))
+        box, note = face_crop.detect(rgb[:, :, ::-1])  # YuNet expects BGR
+        if box is None:
+            return {
+                "agent":       "Spatial Analysis",
+                "status":      "no_face",
+                "color":       "cyan",
+                "confidence":  0.0,
+                "is_fake":     None,
+                "finding":     f"{note}. The spatial model needs a clearly visible face, so no score was produced.",
+                "gradcam_b64": None,
+            }
+        img = Image.fromarray(np.ascontiguousarray(face_crop.crop(rgb, box)))
         tensor = _TRANSFORM(img).unsqueeze(0).to(_device)  # (1, 3, 224, 224)
 
         with torch.no_grad():
@@ -363,10 +377,11 @@ def predict(image_path: str) -> dict:
 
         return {
             "agent":       "Spatial Analysis",
+            "status":      "trained",
             "color":       "cyan",
             "confidence":  round(fake_probability, 4),
             "is_fake":     fake_probability >= 0.50,
-            "finding":     _make_finding(fake_probability),
+            "finding":     f"{note}. " + _make_finding(fake_probability),
             "gradcam_b64": None,   # GradCAM not available for this checkpoint
         }
 
