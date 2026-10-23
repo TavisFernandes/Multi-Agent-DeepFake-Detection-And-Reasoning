@@ -7,10 +7,11 @@ Loads the newly trained, leakage-controlled base detector checkpoints:
   - Temporal:  veritas/backend/models/temporal_agent_lc.pth
   - Audio:     veritas/backend/models/audio_agent_lc.pth
 
-Evaluates:
-  - fusion_train: 100 identities, 802 clips
-  - fusion_val:    50 identities, 220 clips
-  - final_test:    50 identities, 217 pure clips (plus auditing of the 49 historical test clips)
+Evaluates (manifest v3):
+  - fusion_train: 100 identities, 795 clips
+  - fusion_val:    50 identities, 215 clips
+  final_test is frozen and not extracted (its historical scores are in cache/fusion_features_lc_v3.json).
+Writes cache/fusion_features_lc_v4.json with provenance (manifest, checkpoint, source and WAV hashes).
 
 Guarantees:
   - 100% out-of-sample predictions (no base detector was trained or selected on any of these clips).
@@ -26,7 +27,6 @@ import json
 import logging
 import math
 import os
-import subprocess
 import sys
 import time
 import wave
@@ -34,7 +34,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import cv2
-import imageio_ffmpeg
 import numpy as np
 import torch
 import torch.nn as nn
@@ -65,16 +64,16 @@ logger = logging.getLogger("extract_fusion_features_lc_v3")
 
 MANIFEST_PATH = _HERE / "leakage_controlled_split_manifest_v3.json"  # v3: v2 minus 11 repeated rows (dataset_audit/manifest_v3_exclusions.json)
 HISTORICAL_MANIFEST_PATH = _HERE / "pure_identity_disjoint_manifest.json"
-CACHE_OUT_PATH = _HERE / "cache" / "fusion_features_lc_v3.json"
+# v4: same detectors as v3, audio decoded via the collision-free wav_cache, with provenance; v3 kept for audit.
+CACHE_OUT_PATH = _HERE / "cache" / "fusion_features_lc_v4.json"
+TARGET_SPLITS = ["fusion_train", "fusion_val"]  # final_test is frozen: never re-extracted or re-scored
 CACHE_OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 SPATIAL_CKPT_PATH = _BACKEND_DIR / "models" / "spatial_agent_lc.pth"
 TEMPORAL_CKPT_PATH = _BACKEND_DIR / "models" / "temporal_agent_lc.pth"
 AUDIO_CKPT_PATH = _BACKEND_DIR / "models" / "audio_agent_lc.pth"
 
-WAV_CACHE_DIR = Path(r"D:\VERITAS_TRAINING\wav_cache")
-WAV_CACHE_DIR.mkdir(parents=True, exist_ok=True)
-FFMPEG_EXE = imageio_ffmpeg.get_ffmpeg_exe()
+import wav_cache  # noqa: E402  (training/ is on sys.path when run as a script)
 
 # Preprocessing constants matching detector training
 SPATIAL_SIZE = 224
@@ -307,29 +306,8 @@ class LCDetectors:
         finally:
             cap.release()
 
-    def _extract_wav(self, mp4_path: str) -> Optional[str]:
-        stem = Path(mp4_path).stem
-        parent_id = Path(mp4_path).parent.name
-        cache_wav = WAV_CACHE_DIR / f"{parent_id}_{stem}.wav"
-        if cache_wav.exists() and cache_wav.stat().st_size > 1000:
-            return str(cache_wav)
-
-        cmd = [
-            FFMPEG_EXE, "-y", "-nostdin", "-loglevel", "error",
-            "-i", mp4_path, "-vn", "-acodec", "pcm_s16le",
-            "-ar", str(AUDIO_SAMPLE_RATE), "-ac", "1",
-            str(cache_wav),
-        ]
-        try:
-            res = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=15)
-            if res.returncode == 0 and cache_wav.exists() and cache_wav.stat().st_size > 1000:
-                return str(cache_wav)
-            return None
-        except Exception:
-            return None
-
     @torch.no_grad()
-    def predict_audio(self, video_path: str) -> Dict[str, Any]:
+    def predict_audio(self, video_path: str, rel_path: str) -> Dict[str, Any]:
         """Extract audio stream, build mel-spectrogram, compute fake probability."""
         if not os.path.exists(video_path):
             return {
@@ -341,8 +319,8 @@ class LCDetectors:
                 "duration": 0.0,
                 "finding": "File not found",
             }
-        wav_path = self._extract_wav(video_path)
-        if not wav_path:
+        got = wav_cache.get_wav(video_path, rel_path)
+        if not got:
             return {
                 "agent": "Audio Analysis",
                 "status": "no_audio",
@@ -352,6 +330,7 @@ class LCDetectors:
                 "duration": 0.0,
                 "finding": "No audio stream present in media container",
             }
+        wav_path, wav_prov = got
         try:
             with wave.open(wav_path, "rb") as wf:
                 framerate = wf.getframerate()
@@ -408,6 +387,7 @@ class LCDetectors:
                 "decision_threshold": round(self.audio_threshold, 4),
                 "checkpoint": "audio_agent_lc.pth",
                 "finding": finding,
+                "wav_provenance": wav_prov,
             }
         except Exception as e:
             return {
@@ -474,27 +454,26 @@ def run_feature_extraction():
 
     with open(MANIFEST_PATH, "r", encoding="utf-8") as f:
         manifest = json.load(f)
+    provenance = feature_provenance()
 
-    # Load existing cache if present for resumption
+    # Resume only a cache built from the same manifest, checkpoints and preprocessing.
     cache_data = {}
     if CACHE_OUT_PATH.exists():
-        try:
-            with open(CACHE_OUT_PATH, "r", encoding="utf-8") as f:
-                saved = json.load(f)
-                cache_data = saved.get("records", {})
-                logger.info("Resuming from existing cache: %d records found", len(cache_data))
-        except Exception as e:
-            logger.warning("Could not read existing cache: %s. Starting fresh.", e)
+        with open(CACHE_OUT_PATH, "r", encoding="utf-8") as f:
+            saved = json.load(f)
+        if saved["metadata"].get("provenance") != provenance:
+            raise RuntimeError(f"{CACHE_OUT_PATH} was built with different provenance; move it aside to re-extract")
+        cache_data = saved["records"]
+        logger.info("Resuming from existing cache: %d records found", len(cache_data))
 
-    target_splits = ["fusion_train", "fusion_val", "final_test"]
     clips_to_process = []
 
-    for s in target_splits:
+    for s in TARGET_SPLITS:
         for cat, clist in manifest["clips"][s].items():
             for item in clist:
                 clips_to_process.append((s, cat, item))
 
-    logger.info("Total clips across fusion_train, fusion_val, final_test: %d", len(clips_to_process))
+    logger.info("Total clips across %s: %d", ", ".join(TARGET_SPLITS), len(clips_to_process))
 
     start_time = time.time()
     processed_count = 0
@@ -502,14 +481,15 @@ def run_feature_extraction():
 
     for idx, (split_name, cat_name, item) in enumerate(clips_to_process, 1):
         full_path = item["full_path"]
+        source_sha256 = wav_cache.file_sha256(full_path)
 
-        # Check if already processed
-        if full_path in cache_data and cache_data[full_path].get("state_vec"):
+        # Skip only if already processed from this exact source file
+        if cache_data.get(full_path, {}).get("source_sha256") == source_sha256:
             continue
 
         sp_res = detectors.predict_spatial(full_path)
         te_res = detectors.predict_temporal(full_path)
-        au_res = detectors.predict_audio(full_path)
+        au_res = detectors.predict_audio(full_path, item["rel_path"])
         ctx_res = compute_context_result(sp_res, te_res, au_res)
 
         agents = [sp_res, te_res, au_res, ctx_res]
@@ -527,6 +507,7 @@ def run_feature_extraction():
             "race": item.get("race", ""),
             "gender": item.get("gender", ""),
             "split": split_name,
+            "source_sha256": source_sha256,
             "agents": agents,
             "state_vec": state_vec.tolist(),
             "metadata": metadata,
@@ -546,9 +527,9 @@ def run_feature_extraction():
             elapsed = time.time() - start_time
             rate = processed_count / max(elapsed, 1e-4)
             logger.info("Processed %d/%d clips (%.1f clips/sec) | Saved cache", idx, len(clips_to_process), rate)
-            _save_cache(cache_data)
+            _save_cache(cache_data, provenance)
 
-    _save_cache(cache_data)
+    _save_cache(cache_data, provenance)
     total_time = time.time() - start_time
     logger.info("=" * 80)
     logger.info("Feature extraction complete in %.1f seconds. Total cached records: %d",
@@ -556,15 +537,28 @@ def run_feature_extraction():
     logger.info("=" * 80)
 
 
-def _save_cache(records: Dict[str, Any]):
+def feature_provenance() -> Dict[str, Any]:
+    """Everything a cached feature depends on besides the source file itself (hashed per record)."""
+    return {
+        "manifest": {"file": MANIFEST_PATH.name, "sha256": wav_cache.file_sha256(MANIFEST_PATH)},
+        "checkpoints_sha256": {p.name: wav_cache.file_sha256(p)
+                               for p in (SPATIAL_CKPT_PATH, TEMPORAL_CKPT_PATH, AUDIO_CKPT_PATH)},
+        "wav_preprocessing": wav_cache.PREPROCESSING,
+        "wav_cache_dir": str(wav_cache.CACHE_DIR),
+        "splits": TARGET_SPLITS,
+    }
+
+
+def _save_cache(records: Dict[str, Any], provenance: Dict[str, Any]):
     payload = {
         "metadata": {
-            "version": "fusion_features_lc_v3",
+            "version": "fusion_features_lc_v4",
             "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
             "spatial_checkpoint": "spatial_agent_lc.pth",
             "temporal_checkpoint": "temporal_agent_lc.pth",
             "audio_checkpoint": "audio_agent_lc.pth",
             "total_records": len(records),
+            "provenance": provenance,
         },
         "records": records,
     }

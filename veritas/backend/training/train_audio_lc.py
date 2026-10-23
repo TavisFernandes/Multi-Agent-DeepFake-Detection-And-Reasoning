@@ -20,14 +20,12 @@ import json
 import logging
 import os
 import random
-import subprocess
 import sys
 import time
 import wave
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-import imageio_ffmpeg
 import numpy as np
 import torch
 import torch.nn as nn
@@ -52,10 +50,8 @@ logger = logging.getLogger("train_audio_lc")
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 MANIFEST_PATH = BACKEND_DIR / "training" / "leakage_controlled_split_manifest_v3.json"  # v3: v2 minus 11 repeated rows (dataset_audit/manifest_v3_exclusions.json)
 CHECKPOINT_OUT = BACKEND_DIR / "models" / "audio_agent_lc.pth"
-WAV_CACHE_DIR = Path(r"D:\VERITAS_TRAINING\wav_cache")
-WAV_CACHE_DIR.mkdir(parents=True, exist_ok=True)
-
-FFMPEG_EXE = imageio_ffmpeg.get_ffmpeg_exe()
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import wav_cache  # noqa: E402
 
 SAMPLE_RATE = 16000
 CLIP_DURATION = 3.0
@@ -80,34 +76,12 @@ mel_transform = T.MelSpectrogram(
 amp_to_db = T.AmplitudeToDB()
 
 
-def extract_or_get_wav(mp4_path: str) -> Optional[str]:
-    """Extract audio stream to 16kHz mono WAV, caching locally."""
+def extract_or_get_wav(mp4_path: str, rel_path: str) -> Optional[str]:
+    """16 kHz mono WAV for this exact source file (validated, collision-free cache: wav_cache.py)."""
     if not os.path.exists(mp4_path):
         return None
-    stem = Path(mp4_path).stem
-    parent_id = Path(mp4_path).parent.name
-    cache_wav = WAV_CACHE_DIR / f"{parent_id}_{stem}.wav"
-    if cache_wav.exists() and cache_wav.stat().st_size > 1000:
-        return str(cache_wav)
-
-    cmd = [
-        FFMPEG_EXE, "-y",
-        "-nostdin",
-        "-loglevel", "error",
-        "-i", mp4_path,
-        "-vn",
-        "-acodec", "pcm_s16le",
-        "-ar", str(SAMPLE_RATE),
-        "-ac", "1",
-        str(cache_wav),
-    ]
-    try:
-        res = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10)
-        if res.returncode == 0 and cache_wav.exists() and cache_wav.stat().st_size > 1000:
-            return str(cache_wav)
-        return None
-    except Exception:
-        return None
+    got = wav_cache.get_wav(mp4_path, rel_path)
+    return got[0] if got else None
 
 
 def wav_to_mel_tensor(wav_path: str) -> Optional[torch.Tensor]:
@@ -162,7 +136,7 @@ class AudioDataset(Dataset):
         if path in self._cache:
             tensor = self._cache[path]
         else:
-            wav_path = extract_or_get_wav(path)
+            wav_path = extract_or_get_wav(path, item["rel_path"])
             if wav_path:
                 tensor = wav_to_mel_tensor(wav_path)
             else:

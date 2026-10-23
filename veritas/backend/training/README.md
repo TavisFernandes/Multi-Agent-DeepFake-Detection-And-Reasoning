@@ -11,7 +11,7 @@ Detector training needs a CUDA build of torch (the locked one is CPU-only); PPO 
 
 **Paths (not yet configurable):** the manifest stores absolute paths under
 `D:\VERITAS_TRAINING\data\FakeAVCeleb_v1.2\FakeAVCeleb_v1.2`, and `train_temporal_lc.py`, `train_audio_lc.py`
-and `extract_fusion_features_lc_v3.py` cache to `D:\VERITAS_TRAINING\{temporal_cache,wav_cache}`.
+and `extract_fusion_features_lc_v3.py` cache to `D:\VERITAS_TRAINING\{temporal_cache,wav_cache_v2}`.
 Another machine must use the same layout until these become settings.
 
 **Missing:** the script that generated `leakage_controlled_split_manifest.json` is not in the repo, so the
@@ -47,9 +47,18 @@ The loaders read v2 until v3 replaced it.
 > been scored repeatedly. Those numbers are kept as history only. Do not rescore final_test to report a
 > fresh result, and do not use it to select models or thresholds. The final_test evaluators stay pinned to v1.
 
-Audio calibration (Platt/isotonic) was tried and **not deployed**; see
-`calibration_experiments/audio_2026-10-23/RESULTS.md` (it also documents a WAV-cache key collision in
-`extract_fusion_features_lc_v3.py` that must be fixed before features are regenerated).
+**WAV cache (`wav_cache.py`).** The old shared cache `D:\VERITAS_TRAINING\wav_cache` named WAVs
+`{identity}_{stem}.wav` and dropped the category folder. 313 manifest files, 269 of them in detector_train,
+were fed another file's audio (`dataset_audit/wav_cache_v1_audit.json`, made by `audit_wav_cache_v1.py`).
+So `audio_agent_lc.pth` was trained with that label noise. The old directory is kept for audit. The new cache
+(`wav_cache_v2`) keys by dataset-relative path and reuses a WAV only if its sidecar's source SHA-256,
+preprocessing and WAV SHA-256 still match. Fusion features from it are in `cache/fusion_features_lc_v4.json`:
+fusion_train and fusion_val only, with manifest, checkpoint, source and WAV hashes. `cache/fusion_features_lc_v3.json`
+is kept, and the frozen final_test evaluators still read it.
+
+Audio calibration (Platt/isotonic) is **not deployed**. See
+`calibration_experiments/audio_2026-10-23_corrected/RESULTS.md`; the earlier
+`audio_2026-10-23/` run was fitted on collision-affected scores and is archived only.
 
 Run from `veritas/backend/training/`, in order:
 
@@ -57,7 +66,7 @@ Run from `veritas/backend/training/`, in order:
 python train_spatial_lc.py           # -> models/spatial_agent_lc.pth   (selected on detector_val)
 python train_temporal_lc.py          # -> models/temporal_agent_lc.pth  (selected on detector_val)
 python train_audio_lc.py             # -> models/audio_agent_lc.pth     (selected on detector_val)
-python extract_fusion_features_lc_v3.py   # -> cache/fusion_features_lc_v3.json (out-of-sample scores)
+python extract_fusion_features_lc_v3.py   # -> cache/fusion_features_lc_v4.json (out-of-sample, fusion_train/val)
 python train_ppo_v3.py --seed 2 --epochs 300 --out ../models/ppo_fusion_policy_v4.pth
 ```
 

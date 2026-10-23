@@ -4,7 +4,7 @@ train_ppo_v3.py
 Mathematically sound PPO v3 Adaptive Fusion Policy training pipeline.
 Uses truly out-of-sample feature representations generated from leakage-controlled
 base detectors:
-  - Feature Cache: veritas/backend/training/cache/fusion_features_lc_v3.json
+  - Feature Cache: veritas/backend/training/cache/fusion_features_lc_v4.json
   - Train Set:     fusion_train (100 identities, 802 clips)
   - Val Set:       fusion_val (50 identities, 220 clips)
 
@@ -62,7 +62,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("train_ppo_v3")
 
-FEATURES_CACHE_PATH = _HERE / "cache" / "fusion_features_lc_v3.json"
+FEATURES_CACHE_PATH = _HERE / "cache" / "fusion_features_lc_v4.json"  # v4: collision-free audio (wav_cache.py)
 MANIFEST_PATH = _HERE / "leakage_controlled_split_manifest_v3.json"
 CHECKPOINT_OUT = _BACKEND_DIR / "models" / "ppo_fusion_policy_v3.pth"
 
