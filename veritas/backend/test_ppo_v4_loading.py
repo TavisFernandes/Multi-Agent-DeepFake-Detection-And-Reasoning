@@ -31,6 +31,30 @@ def test_ppo_mode_uses_the_v4_policy(monkeypatch):
     assert fusion_policy.get_fusion_policy().checkpoint_path == V4.resolve()
 
 
+def test_missing_v4_is_an_error_not_a_silent_fallback_to_v2(monkeypatch, tmp_path):
+    assert fusion_policy.DEFAULT_V2_CHECKPOINT_PATH.exists()  # an older policy is available to fall back to...
+    monkeypatch.setattr(fusion_policy, "DEFAULT_V4_CHECKPOINT_PATH", tmp_path / "missing_v4.pth")
+    policy = fusion_policy.PPOFusionPolicy(device=torch.device("cpu"))
+    assert not policy.is_loaded and policy.checkpoint_path is None  # ...but it must not be used
+    assert policy.load_error.startswith("FileNotFoundError")
+
+
+def test_corrupt_checkpoint_reports_the_error(tmp_path):
+    bad = tmp_path / "corrupt.pth"
+    bad.write_bytes(b"not a checkpoint")
+    policy = fusion_policy.PPOFusionPolicy(checkpoint_path=bad, device=torch.device("cpu"))
+    assert not policy.is_loaded and policy.load_error
+
+
+def test_ppo_mode_reports_the_fallback_when_the_policy_cannot_load(monkeypatch, tmp_path):
+    from main import _decision_payload
+    monkeypatch.setattr(fusion_policy, "DEFAULT_V4_CHECKPOINT_PATH", tmp_path / "missing_v4.pth")
+    monkeypatch.setattr(fusion_policy, "_GLOBAL_POLICY", None)
+    *_, details = _compute_verdict(AGENTS, "video", return_details=True, mode_override="ppo")
+    assert details["method"] == "corrected_fixed"
+    assert "PPO policy not loaded (FileNotFoundError" in _decision_payload(details)["fusion_fallback_reason"]
+
+
 def test_production_default_is_still_corrected_fixed(monkeypatch):
     monkeypatch.delenv("VERITAS_FUSION_MODE", raising=False)
     *_, details = _compute_verdict(AGENTS, "video", return_details=True)

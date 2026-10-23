@@ -63,29 +63,25 @@ Backend — FastAPI (8000)
 | **Spatial** | EfficientNet-B0 + GradCAM | Image/Video frame | Pixel-level artifacts, blending boundaries |
 | **Temporal** | R3D-18 (16-frame sampling) | Video | Inter-frame inconsistencies |
 | **Audio** | EfficientNet-B0 + Mel Spectrogram | Audio/Video | Speech synthesis artifacts |
-| **Context** | Rule-based + metadata | Any | Contextual inconsistencies |
+| **Context** | Derived from the other scores | Video with audio | Describes whether visual and audio scores agree (explanation only, never votes) |
 
 ## Model Checkpoints
 
-Place `.pth` checkpoint files in `backend/models/`:
+Files the backend loads from `backend/models/` (leakage-controlled training, see `backend/training/README.md`):
 
-```
-backend/models/
-├── spatial_agent_checkpoint.pth
-├── temporal_agent_checkpoint.pth
-└── audio_agent_checkpoint.pth
-```
+| Agent | File loaded | Notes |
+|-------|-------------|-------|
+| Spatial | `spatial_agent_lc.pth` | EfficientNet-B0, threshold 0.50 |
+| Temporal | `temporal_agent_lc.pth` | R3D-18, threshold 0.35 (from the checkpoint) |
+| Audio | `audio_agent_lc.pth` | EfficientNet-B0 on mel spectrogram, threshold 0.50 |
+| Face detector | `face_detection_yunet_2023mar.onnx` | OpenCV YuNet, crops faces for Spatial/Temporal |
+| PPO fusion (`VERITAS_FUSION_MODE=ppo` only) | `ppo_fusion_policy_v4.pth` | Experimental; production uses `corrected_fixed` |
+| Context | none | Explanation only: restates the visual–audio score gap, never votes |
 
-### Model Checkpoints Status
+The older `spatial_agent.pth`, `temporal_agent_checkpoint.pth`, `audio_agent_checkpoint.pth` and
+`ppo_fusion_policy{,_v2,_v3}.pth` are kept for reference and are not loaded.
 
-| Agent | Checkpoint | Status |
-|-------|-----------|--------|
-| Spatial | spatial_agent_checkpoint.pth | ✅ Available |
-| Temporal | temporal_agent_checkpoint.pth | ⚠️ Mock mode (training in progress) |
-| Audio | audio_agent_checkpoint.pth | ⚠️ Mock mode (training in progress) |
-| Context | N/A | Mock (rule-based) |
-
-If checkpoints are missing, agents fall back to mock results so the system still runs end-to-end.
+If a checkpoint is missing, that agent reports itself unavailable and is left out of fusion; no score is invented.
 
 ## Tech Stack
 

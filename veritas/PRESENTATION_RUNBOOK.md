@@ -55,10 +55,12 @@ Before launching the services, verify the required tools are present:
   ```
 
 ### 2.4 Verify Trained Checkpoints
-Check that the three neural checkpoints are in `veritas/backend/models/`:
-* `spatial_agent.pth` (~52.5 MB)
-* `temporal_agent_checkpoint.pth` (~398.1 MB)
-* `audio_agent_checkpoint.pth` (~16.3 MB)
+Check that the files the backend loads are in `veritas/backend/models/`:
+* `spatial_agent_lc.pth` (~16.8 MB)
+* `temporal_agent_lc.pth` (~126.6 MB)
+* `audio_agent_lc.pth` (~15.6 MB)
+* `face_detection_yunet_2023mar.onnx` (~0.2 MB)
+* `ppo_fusion_policy_v4.pth` (only used when `VERITAS_FUSION_MODE=ppo`)
 
 ---
 
@@ -163,9 +165,9 @@ Be prepared to explain the detection semantics to examiners:
    - `UNCERTAIN`: Abstention zone ($[0.45, 0.55]$ deadband). The system abstains rather than falsely claiming authenticity when evidence is borderline.
 
 2. **Why `corrected_fixed` is Production Default**:
-   - Dynamic-denominator fixed-weight fusion correctly weights active modalities ($0.40$ Spatial, $0.30$ Temporal, $0.20$ Audio, $0.10$ Context) while excluding unavailable streams (e.g. videos without audio).
-   - Prevents dilution bugs and guarantees zero false authentic verdicts on missing modalities.
-   - PPO v3 remains experimental in research splits and is disabled in production.
+   - Visual score = $(0.40 \cdot$ Spatial $+ 0.30 \cdot$ Temporal$) / 0.70$; fused score = $1 - (1 - \text{visual})(1 - \text{audio})$. Unavailable streams (e.g. videos without audio) are left out rather than counted as authentic. Context is explanation-only and has no weight.
+   - Missing modalities never lower the score, and a video with no usable face can never be called AUTHENTIC.
+   - PPO v4 is experimental (`VERITAS_FUSION_MODE=ppo`) and disabled in production.
 
 3. **Missing Modality Handling**:
    - Image uploads mark Temporal as `not_applicable` and Audio as `no_audio`.

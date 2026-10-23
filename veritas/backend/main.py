@@ -262,6 +262,7 @@ def _decision_payload(details: dict) -> dict:
         "category_probabilities_calibrated": details.get(
             "category_probabilities_calibrated", False
         ),
+        "fusion_fallback_reason": details.get("fusion_fallback_reason"),
     }
 
 
@@ -427,8 +428,9 @@ def _compute_verdict(
             overall, verdict, contributing, unavailable, details = policy.fuse_agents(agents, media_type)
             details["method"] = "ppo"
         else:
-            logger.warning("PPO policy not loaded; falling back to corrected fixed-weight fusion.")
+            logger.warning("PPO policy not loaded (%s); using corrected fixed-weight fusion.", policy.load_error)
             overall, verdict, contributing, unavailable, details = compute_verdict_corrected_fixed(agents, media_type)
+            details["fusion_fallback_reason"] = f"PPO policy not loaded ({policy.load_error}); corrected_fixed was used."
     elif mode == "legacy":
         overall, verdict, contributing, unavailable, details = compute_verdict_legacy(agents)
     elif mode == "corrected_fixed":
@@ -437,8 +439,11 @@ def _compute_verdict(
         logger.warning("Unknown fusion mode '%s', defaulting to corrected fixed-weight fusion.", mode)
         overall, verdict, contributing, unavailable, details = compute_verdict_corrected_fixed(agents, media_type)
 
-    # No usable face means the visual stream was never checked, so the result must not read as AUTHENTIC.
-    if verdict == "AUTHENTIC" and any(a.get("status") == "no_face" for a in agents):
+    # A video whose picture was never checked (no usable face, undecodable frames) must not read as AUTHENTIC.
+    visual_checked = any(a.get("is_fake") is not None for a in agents if a.get("agent") in ("Spatial Analysis", "Temporal Analysis"))
+    if verdict == "AUTHENTIC" and (
+        any(a.get("status") == "no_face" for a in agents) or (media_type == "video" and not visual_checked)
+    ):
         verdict = VERDICT_UNCERTAIN_FULL
         details["verdict"] = verdict
         enrich_decision_fields(details)

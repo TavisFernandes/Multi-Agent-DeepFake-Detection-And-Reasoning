@@ -212,8 +212,9 @@ def _extract_frames(video_path: str) -> tuple[Optional[np.ndarray], Optional[str
     try:
         fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        if total_frames <= 0:
-            logger.warning("Video reports 0 frames: %s", video_path)
+        # Training skipped clips under 16 frames; a still image renamed .mp4 opens as a 1-frame "video".
+        if total_frames < _NUM_FRAMES:
+            logger.warning("Video has %d frames (< %d): %s", total_frames, _NUM_FRAMES, video_path)
             return None, None
 
         step = max(1, int(round(fps / _TARGET_FPS)))
@@ -351,7 +352,7 @@ def run_temporal_agent(video_path: str) -> dict:
                 "status":      "error",
                 "confidence":  0.0,
                 "is_fake":     None,
-                "finding":     "No readable frames — temporal analysis skipped.",
+                "finding":     f"Unreadable video or fewer than {_NUM_FRAMES} frames — temporal analysis skipped.",
                 "gradcam_b64": None,
             }
 

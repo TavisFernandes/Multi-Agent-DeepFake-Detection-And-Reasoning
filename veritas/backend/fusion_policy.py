@@ -638,22 +638,15 @@ class PPOFusionPolicy:
         self.is_loaded = False
         self.checkpoint_metadata: Dict[str, Any] = {}
         self.checkpoint_path: Optional[Path] = None
+        self.load_error: Optional[str] = None
 
-        # Prefer v4, then v2, then the original v1
-        if checkpoint_path:
-            ckpt = Path(checkpoint_path)
-        elif DEFAULT_V4_CHECKPOINT_PATH.exists():
-            ckpt = DEFAULT_V4_CHECKPOINT_PATH
-        elif DEFAULT_V2_CHECKPOINT_PATH.exists():
-            ckpt = DEFAULT_V2_CHECKPOINT_PATH
-        else:
-            ckpt = DEFAULT_CHECKPOINT_PATH
-
-        if ckpt.exists():
-            try:
-                self.load_checkpoint(ckpt)
-            except Exception as e:
-                logger.error("Failed to load PPO checkpoint from %s: %s", ckpt, e)
+        # Only the intended policy: never fall back silently to the older v2/v1 files.
+        ckpt = Path(checkpoint_path) if checkpoint_path else DEFAULT_V4_CHECKPOINT_PATH
+        try:
+            self.load_checkpoint(ckpt)
+        except Exception as e:
+            self.load_error = f"{type(e).__name__}: {e}"
+            logger.error("Failed to load PPO checkpoint from %s: %s", ckpt, e)
 
     def load_checkpoint(self, path: Union[str, Path]) -> None:
         path = Path(path).resolve()
