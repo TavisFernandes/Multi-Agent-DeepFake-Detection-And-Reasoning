@@ -1,19 +1,41 @@
-import React from 'react';
+import { useCallback, useState } from 'react';
+import { MotionConfig } from 'framer-motion';
 import { NavDock } from '@/components/layout/NavDock';
 import { Footer } from '@/components/layout/Footer';
 import { SmoothScroll } from '@/components/layout/SmoothScroll';
-import { ScrollStory } from '@/sections/ScrollStory';
+import { Intro } from '@/components/layout/Intro';
+import { HeroSection } from '@/sections/HeroSection';
+import { ModelsSheet, VerifyCta } from '@/sections/ModelsSheet';
+
+// Play the intro once per page load, not again when returning from the console.
+let introPlayed =
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export default function Home() {
+  const [showIntro] = useState(!introPlayed);
+  const [ready, setReady] = useState(introPlayed);
+  const reveal = useCallback(() => {
+    introPlayed = true;
+    setReady(true);
+  }, []);
+
   return (
     <SmoothScroll>
-      <div className="min-h-screen w-full bg-[#07090e] text-white selection:bg-blue-500/30 selection:text-white">
-        <NavDock />
-        <main>
-          <ScrollStory />
-        </main>
-        <Footer />
-      </div>
+      <MotionConfig reducedMotion="user">
+        <div className="min-h-screen w-full bg-paper text-ink selection:bg-[#a5d8ff]">
+          {showIntro && <Intro onReveal={reveal} />}
+          <NavDock />
+          <main>
+            {/* Wrapper bounds the sticky hero so it releases (and stops rendering) once the sheet covers it */}
+            <div className="relative">
+              <HeroSection ready={ready} />
+              <ModelsSheet />
+            </div>
+            <VerifyCta />
+          </main>
+          <Footer />
+        </div>
+      </MotionConfig>
     </SmoothScroll>
   );
 }

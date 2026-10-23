@@ -13,7 +13,8 @@ Architecture
 
 Audio pipeline
 --------------
-  video/other → ffmpeg → mono 16 kHz WAV
+  any media (incl. WAV/MP3) → ffmpeg → mono 16 kHz 16-bit WAV
+  centre 3 s crop (wrap-pad if shorter), matching train_audio_lc.py
   WAV → torchaudio → MelSpectrogram (128 bins) → AmplitudeToDB
       → resize (224, 224) → normalise → 3-channel tensor
 
@@ -46,9 +47,9 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 _HERE = Path(__file__).resolve().parent
 _CANDIDATE_PATHS = [
-    _HERE / "models" / "audio_agent_checkpoint.pth",
-    _HERE / ".." / "backend" / "models" / "audio_agent_checkpoint.pth",
-    _HERE / ".." / ".." / "backend" / "models" / "audio_agent_checkpoint.pth",
+    _HERE / "models" / "audio_agent_lc.pth",
+    _HERE / ".." / "backend" / "models" / "audio_agent_lc.pth",
+    _HERE / ".." / ".." / "backend" / "models" / "audio_agent_lc.pth",
 ]
 _CHECKPOINT_PATH = next(
     (p for p in _CANDIDATE_PATHS if p.resolve().exists()), _CANDIDATE_PATHS[0]
@@ -62,7 +63,6 @@ _DECISION_THRESHOLD: float = 0.50
 # ---------------------------------------------------------------------------
 _SAMPLE_RATE   = 16_000
 _CLIP_SAMPLES  = 48_000          # 3 seconds × 16 kHz
-_AUDIO_EXTS    = {".wav", ".mp3"}
 
 # MelSpectrogram parameters
 _MEL_TRANSFORM = T.MelSpectrogram(
@@ -141,17 +141,13 @@ def _extract_wav(media_path: str) -> Optional[str]:
     """
     Return a path to a 16 kHz mono WAV file for the given media.
 
-    - If the file is already .wav or .mp3, return it directly (no copy).
-    - Otherwise, run ffmpeg to extract the audio track to a temp WAV.
+    Always runs ffmpeg, even for .wav/.mp3: the reader below only handles
+    16-bit PCM WAV, so MP3, 24-bit and float WAVs must be converted.
 
     Returns None on ffmpeg failure (non-zero exit or exception).
-    The caller is responsible for deleting any temp file created here
+    The caller is responsible for deleting the temp file created here
     (the path is a NamedTemporaryFile that has been closed but not deleted).
     """
-    ext = Path(media_path).suffix.lower()
-    if ext in _AUDIO_EXTS:
-        return media_path      # already usable — no temp file created
-
     # Create a temp WAV and extract audio via ffmpeg
     tmp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
     tmp_path = tmp.name
@@ -303,13 +299,15 @@ def _wav_to_tensor(wav_path: str) -> torch.Tensor:
     if waveform.shape[0] > 1:
         waveform = waveform.mean(dim=0, keepdim=True)   # (1, N)
 
-    # ── 4. Clip / pad to exactly _CLIP_SAMPLES ──────────────────────────────
+    # ── 4. Centre-crop / wrap-pad to _CLIP_SAMPLES (as train_audio_lc.py) ───
     n = waveform.shape[1]
+    if n == 0:
+        raise ValueError("Audio track is empty.")
     if n >= _CLIP_SAMPLES:
-        waveform = waveform[:, :_CLIP_SAMPLES]
+        start = (n - _CLIP_SAMPLES) // 2
+        waveform = waveform[:, start:start + _CLIP_SAMPLES]
     else:
-        pad = torch.zeros(1, _CLIP_SAMPLES - n)
-        waveform = torch.cat([waveform, pad], dim=1)
+        waveform = waveform.repeat(1, -(-_CLIP_SAMPLES // n))[:, :_CLIP_SAMPLES]
 
     # ── 5. Mel spectrogram → dB ──────────────────────────────────────────────
     mel    = _MEL_TRANSFORM(waveform)   # (1, 128, T)
@@ -382,7 +380,6 @@ def run_audio_agent(media_path: str) -> dict:
     dict
     """
     tmp_wav_path: Optional[str] = None
-    is_native_audio = Path(media_path).suffix.lower() in _AUDIO_EXTS
 
     try:
         # ── 1. Probe container for audio stream metadata ────────────────────────────
@@ -447,8 +444,7 @@ def run_audio_agent(media_path: str) -> dict:
                 "finding":     "Failed to extract audio track for analysis.",
             }
 
-        if not is_native_audio:
-            tmp_wav_path = wav_path
+        tmp_wav_path = wav_path
 
         tensor = _wav_to_tensor(wav_path)
 

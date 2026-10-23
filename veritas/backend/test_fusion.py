@@ -20,7 +20,7 @@ sys.path.insert(0, str(_HERE))
 
 from main import _compute_verdict, _WEIGHTS, _build_summary
 
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 print("============================================================")
 print("VERIFYING DYNAMIC FUSION (legacy mode)")

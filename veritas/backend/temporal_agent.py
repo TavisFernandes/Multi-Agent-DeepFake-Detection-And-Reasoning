@@ -14,12 +14,12 @@ Architecture
 
 Checkpoint
 ----------
-Expected at: veritas/backend/models/temporal_agent_checkpoint.pth
+Expected at: veritas/backend/models/temporal_agent_lc.pth
 Loaded key : checkpoint["model_state_dict"]   (strict=True)
 
 Inference preprocessing (from checkpoint metadata)
 ---------------------------------------------------
-- Sample 16 frames at ~8 FPS across a 2-second window
+- Sample 16 frames at ~8 FPS from a window centred in the video
 - Resize each frame to 112 × 112
 - BGR → RGB
 - Normalize: mean=[0.43216, 0.39467, 0.37645]
@@ -28,14 +28,8 @@ Inference preprocessing (from checkpoint metadata)
 
 Decision threshold
 ------------------
-Stored in checkpoint["decision_threshold"] = 0.05
-(validation-selected; ~99% accuracy on held-out test set)
-
-Held-out test metrics (epoch 7)
---------------------------------
-Accuracy  0.9901  Precision  0.9907
-Recall    0.9990  F1         0.9948
-ROC-AUC   0.9993
+Stored in checkpoint["decision_threshold"] = 0.35 (selected on detector_val).
+Checkpoint trained on detector_train only (leakage-controlled split).
 
 IMPORTANT: This agent detects FAKE VIDEO only.
   RealVideo-RealAudio → tends REAL
@@ -63,9 +57,9 @@ logger = logging.getLogger(__name__)
 _HERE = Path(__file__).resolve().parent  # veritas/backend/
 
 _CANDIDATE_PATHS = [
-    _HERE / "models" / "temporal_agent_checkpoint.pth",
-    _HERE / ".." / "backend" / "models" / "temporal_agent_checkpoint.pth",
-    _HERE / ".." / ".." / "backend" / "models" / "temporal_agent_checkpoint.pth",
+    _HERE / "models" / "temporal_agent_lc.pth",
+    _HERE / ".." / "backend" / "models" / "temporal_agent_lc.pth",
+    _HERE / ".." / ".." / "backend" / "models" / "temporal_agent_lc.pth",
 ]
 _CHECKPOINT_PATH: Path = next(
     (p for p in _CANDIDATE_PATHS if p.resolve().exists()),
@@ -199,8 +193,8 @@ def load_model() -> None:
 
 def _extract_frames(video_path: str) -> Optional[np.ndarray]:
     """
-    Sample _NUM_FRAMES frames from the video at ~_TARGET_FPS, covering at most
-    _WINDOW_SECS seconds, starting from the beginning.
+    Sample _NUM_FRAMES frames at ~_TARGET_FPS from a window centred in the
+    video — the same indices train_temporal_lc.py used.
 
     Returns np.ndarray (16, 3, 112, 112) float32 normalised, or None on failure.
     """
@@ -217,12 +211,10 @@ def _extract_frames(video_path: str) -> Optional[np.ndarray]:
             logger.warning("Video reports 0 frames: %s", video_path)
             return None
 
-        # Compute the window: up to _WINDOW_SECS at _TARGET_FPS
-        window_frames = min(total_frames, int(_WINDOW_SECS * fps))
-        window_frames = max(window_frames, _NUM_FRAMES)  # need at least 16
-
-        # _NUM_FRAMES evenly-spaced indices within that window
-        indices = np.linspace(0, window_frames - 1, _NUM_FRAMES, dtype=int)
+        step = max(1, int(round(fps / _TARGET_FPS)))
+        start = max(0, (total_frames - _NUM_FRAMES * step) // 2)
+        # Short clips run past the end; those reads fall back to the last good frame below.
+        indices = [start + i * step for i in range(_NUM_FRAMES)]
 
         frames: list[np.ndarray] = []
         last_good: Optional[np.ndarray] = None

@@ -11,13 +11,8 @@ This runbook provides the verified, step-by-step procedures for launching, opera
    │                  Browser Client (:5173)                      │
    │  React 19 + Vite 7 + Tailwind CSS (Interactive Console)      │
    └──────────────────────────────┬───────────────────────────────┘
-                                  │  /api/* (Vite proxy)
-                                  ▼
-   ┌──────────────────────────────────────────────────────────────┐
-   │               BFF Proxy Server (:3001)                       │
-   │  Node.js Express — Multipart handling, SSE Stream bridge     │
-   └──────────────────────────────┬───────────────────────────────┘
-                                  │  /analyse/stream (HTTP POST)
+                                  │  /api/analyse/stream → /analyse/stream
+                                  │  (Vite dev proxy; FastAPI streams NDJSON back)
                                   ▼
    ┌──────────────────────────────────────────────────────────────┐
    │               Inference Backend (:8000)                      │
@@ -67,9 +62,9 @@ Check that the three neural checkpoints are in `veritas/backend/models/`:
 
 ---
 
-## 3. Exact Startup Commands (Three Terminals)
+## 3. Exact Startup Commands (Two Terminals)
 
-Open three separate PowerShell terminals and run each service in its dedicated directory:
+Open two separate PowerShell terminals and run each service in its dedicated directory:
 
 ### Terminal 1 — Backend (FastAPI + PyTorch)
 ```powershell
@@ -83,18 +78,7 @@ py -3.10 main.py
   INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
   ```
 
-### Terminal 2 — API Proxy (Express BFF)
-```powershell
-cd veritas/proxy
-node server.js
-```
-* **Expected Port**: `3001`
-* **Success Output**:
-  ```
-  [VERITAS proxy] listening on http://localhost:3001
-  ```
-
-### Terminal 3 — Frontend (React + Vite)
+### Terminal 2 — Frontend (React + Vite)
 ```powershell
 cd veritas/frontend
 npm run dev
@@ -110,7 +94,7 @@ npm run dev
 
 ## 4. Verification & Health Checks
 
-Verify all three tiers are communicating before beginning your presentation:
+Verify both tiers are communicating before beginning your presentation:
 
 ### 4.1 Backend Health Check
 ```powershell
@@ -118,13 +102,7 @@ py -3.10 -c "import urllib.request; print(urllib.request.urlopen('http://localho
 ```
 * **Expected Response**: `{"status":"ok"}`
 
-### 4.2 Proxy Health Check
-```powershell
-py -3.10 -c "import urllib.request; print(urllib.request.urlopen('http://localhost:3001/api/health').read().decode())"
-```
-* **Expected Response**: `{"status":"ok","timestamp":"..."}`
-
-### 4.3 Browser Access
+### 4.2 Browser Access
 Open Google Chrome or Microsoft Edge and navigate to:
 ```
 http://localhost:5173/console
@@ -198,14 +176,14 @@ Be prepared to explain the detection semantics to examiners:
 ## 7. Clean Shutdown & Restart
 
 ### 7.1 Graceful Shutdown
-In each of the three terminals, press `Ctrl + C` once.
+In each of the two terminals, press `Ctrl + C` once.
 
 ### 7.2 Resolving Port Conflicts (If a service won't start)
 If a port is already bound, identify and terminate the orphaned process:
 
 ```powershell
 # Check for active listeners on VERITAS ports
-netstat -ano | findstr "8000 3001 5173"
+netstat -ano | findstr "8000 5173"
 
 # Terminate process by PID (replace <PID> with the number from the last column)
 taskkill /F /PID <PID>
@@ -218,8 +196,7 @@ taskkill /F /PID <PID>
 | Issue | Cause | Fix |
 |---|---|---|
 | **`python: command not found` or pytest closed-file crash** | System defaulted to experimental Python 3.14 | Launch using `py -3.10 main.py` or run `py -3.10 -m pytest -s` |
-| **Proxy returns `ECONNREFUSED` / 502** | Backend FastAPI server is not running | Start Terminal 1: `cd veritas/backend && py -3.10 main.py` |
-| **Frontend displays "Failed to connect to stream"** | Proxy server on port 3001 is offline | Start Terminal 2: `cd veritas/proxy && node server.js` |
+| **Console says "Can't reach the analysis service"** | Backend FastAPI server is not running on port 8000 | Start Terminal 1: `cd veritas/backend && py -3.10 main.py` |
 | **Audio Agent reports `no_audio` on video** | Video container has no audio track | Normal behavior; audio correctly excluded from fusion score |
-| **Large video file times out** | Video exceeds 50MB or CPU decode is slow | Proxy timeout has been extended to 60s; use files under 50MB |
-| **Port 8000 or 3001 already in use** | Stale previous run still bound to port | Run `netstat -ano \| findstr "8000 3001"` and `taskkill /F /PID <PID>` |
+| **Large or long video is rejected or slow** | Files over 50MB are rejected; long videos take longer on CPU | Use files under 50MB; short clips analyse fastest |
+| **Port 8000 or 5173 already in use** | Stale previous run still bound to port | Run `netstat -ano \| findstr "8000 5173"` and `taskkill /F /PID <PID>` |

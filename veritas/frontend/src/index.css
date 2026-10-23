@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
@@ -6,45 +5,50 @@
 /* ── Global Design Tokens ──────────────────────────────────────────────────── */
 
 @theme inline {
-  /* Surface palette – deep obsidian/charcoal */
-  --color-background: #07090e;
-  --color-foreground: #f1f2f4;
-  --color-border: rgba(255, 255, 255, 0.07);
-  --color-input: rgba(255, 255, 255, 0.07);
-  --color-ring: #3b82f6;
+  /* Surface palette – cool paper, navy ink, cyanotype signal */
+  --color-paper: #f3f5f9;
+  --color-ink: #0e1630;
+  --color-signal: #1e3fd8;
+  --color-haze: #a5d8ff;
 
-  --color-card: #0d1017;
-  --color-card-foreground: #e5e7eb;
-  --color-card-border: rgba(255, 255, 255, 0.08);
+  --color-background: #f3f5f9;
+  --color-foreground: #0e1630;
+  --color-border: rgba(14, 22, 48, 0.1);
+  --color-input: rgba(14, 22, 48, 0.12);
+  --color-ring: #1e3fd8;
 
-  --color-popover: #0d1017;
-  --color-popover-foreground: #e5e7eb;
-  --color-popover-border: rgba(255, 255, 255, 0.08);
+  --color-card: #ffffff;
+  --color-card-foreground: #0e1630;
+  --color-card-border: rgba(14, 22, 48, 0.1);
 
-  --color-primary: #3b82f6;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0e1630;
+  --color-popover-border: rgba(14, 22, 48, 0.1);
+
+  --color-primary: #1e3fd8;
   --color-primary-foreground: #ffffff;
-  --color-primary-border: #3b82f6;
+  --color-primary-border: #1e3fd8;
 
-  --color-secondary: #141820;
-  --color-secondary-foreground: #e5e7eb;
-  --color-secondary-border: rgba(255, 255, 255, 0.08);
+  --color-secondary: #e8ecf4;
+  --color-secondary-foreground: #0e1630;
+  --color-secondary-border: rgba(14, 22, 48, 0.1);
 
-  --color-muted: #141820;
-  --color-muted-foreground: #71717a;
-  --color-muted-border: rgba(255, 255, 255, 0.06);
+  --color-muted: #e8ecf4;
+  --color-muted-foreground: #5b6378;
+  --color-muted-border: rgba(14, 22, 48, 0.08);
 
-  --color-accent: #3b82f6;
+  --color-accent: #1e3fd8;
   --color-accent-foreground: #ffffff;
-  --color-accent-border: #3b82f6;
+  --color-accent-border: #1e3fd8;
 
   --color-destructive: #ef4444;
   --color-destructive-foreground: #ffffff;
   --color-destructive-border: #ef4444;
 
-  --font-sans: 'Inter', -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Consolas, monospace;
-  --font-serif: 'Inter', -apple-system, sans-serif;
-  --font-heading: 'Inter', -apple-system, sans-serif;
+  --font-sans: 'Geist', -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+  --font-serif: 'Geist', -apple-system, sans-serif;
+  --font-heading: 'Geist', -apple-system, sans-serif;
 
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
@@ -53,31 +57,31 @@
 }
 
 :root {
-  --background: 222 47% 4%;
-  --foreground: 220 14% 95%;
+  --background: 220 33% 96%;
+  --foreground: 226 55% 12%;
 
-  --card: 222 30% 8%;
-  --card-foreground: 220 14% 90%;
-  --card-border: rgba(255, 255, 255, 0.08);
+  --card: 0 0% 100%;
+  --card-foreground: 226 55% 12%;
+  --card-border: rgba(14, 22, 48, 0.1);
 
-  --border: rgba(255, 255, 255, 0.07);
-  --input: rgba(255, 255, 255, 0.07);
-  --ring: 217 91% 60%;
+  --border: rgba(14, 22, 48, 0.1);
+  --input: rgba(14, 22, 48, 0.12);
+  --ring: 230 76% 48%;
 
-  --primary: 217 91% 60%;
+  --primary: 230 76% 48%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 222 30% 10%;
-  --secondary-foreground: 220 14% 90%;
-  --muted: 222 30% 10%;
-  --muted-foreground: 217 10% 45%;
-  --accent: 217 91% 60%;
+  --secondary: 220 30% 93%;
+  --secondary-foreground: 226 55% 12%;
+  --muted: 220 30% 93%;
+  --muted-foreground: 224 14% 41%;
+  --accent: 230 76% 48%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
 
-  --popover: 222 30% 8%;
-  --popover-foreground: 220 14% 90%;
-  --popover-border: rgba(255, 255, 255, 0.08);
+  --popover: 0 0% 100%;
+  --popover-foreground: 226 55% 12%;
+  --popover-border: rgba(14, 22, 48, 0.1);
 
   --radius: 0.625rem;
 }
@@ -87,17 +91,21 @@
 @layer base {
   * {
     box-sizing: border-box;
-    border-color: rgba(255, 255, 255, 0.07);
+    border-color: rgba(14, 22, 48, 0.1);
   }
 
   html {
-    /* Lenis overwrites this via JS; native fallback for reduced-motion */
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
+  }
+
+  html.lenis,
+  html.lenis-smooth {
+    scroll-behavior: auto !important;
   }
 
   body {
-    background-color: #07090e;
-    color: #e4e6ea;
+    background-color: var(--color-paper);
+    color: var(--color-ink);
     @apply font-sans antialiased;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -105,7 +113,7 @@
 
   /* Override headings to use sans-serif */
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Inter', -apple-system, sans-serif;
+    font-family: var(--font-sans);
     font-weight: 600;
     @apply tracking-tight;
   }
@@ -154,9 +162,114 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.1);
+  background: rgba(14,22,48,0.15);
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.18);
+  background: rgba(14,22,48,0.28);
+}
+
+/* ── Hero & intro type ──────────────────────────────────────────────────────── */
+
+.intro-mark {
+  font-family: var(--font-mono);
+  font-weight: 300;
+  font-size: clamp(2rem, 6vw, 4.5rem);
+  color: var(--color-ink);
+  padding-left: 0.28em; /* balances the trailing letter-spacing so the word sits centred */
+}
+
+.hero-title {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: clamp(2.75rem, 7.5vw, 6.75rem);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+/* ── Liquid glass island nav ────────────────────────────────────────────────── */
+
+.liquid-glass {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.22));
+  -webkit-backdrop-filter: blur(18px) saturate(1.8) brightness(1.06);
+  backdrop-filter: blur(18px) saturate(1.8) brightness(1.06);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 1px rgba(14, 22, 48, 0.06),
+    inset 0 0 14px rgba(255, 255, 255, 0.4),
+    0 12px 32px -10px rgba(14, 22, 48, 0.3),
+    0 2px 6px rgba(14, 22, 48, 0.08);
+}
+
+/* Specular sheen across the top edge of the glass */
+.liquid-glass::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(120% 70% at 50% -20%, rgba(255, 255, 255, 0.85), transparent 60%);
+}
+
+.try-it {
+  background: linear-gradient(180deg, #3d5df0, var(--color-signal));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -2px 4px rgba(14, 22, 48, 0.25),
+    0 4px 14px -4px rgba(30, 63, 216, 0.6);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.try-it:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -2px 4px rgba(14, 22, 48, 0.25),
+    0 8px 20px -6px rgba(30, 63, 216, 0.7);
+}
+
+/* Island ↔ top bar morph. Every state is an explicit length so the browser can interpolate it. */
+.island-nav {
+  --nav-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  position: fixed;
+  top: 0;
+  left: 50%;
+  z-index: 50;
+  width: min(22rem, calc(100% - 2rem));
+  padding: 0.375rem;
+  border-radius: 1.75rem;
+  transform: translate(-50%, calc(100svh - 100% - 1.25rem - env(safe-area-inset-bottom, 0px)));
+  transition:
+    transform 0.8s var(--nav-ease),
+    width 0.8s var(--nav-ease),
+    border-radius 0.8s var(--nav-ease),
+    padding 0.8s var(--nav-ease),
+    border-width 0.8s var(--nav-ease);
+}
+
+.island-nav[data-docked='true'] {
+  width: 100%;
+  padding: calc(0.5rem + env(safe-area-inset-top, 0px)) 1.5rem 0.5rem;
+  border-radius: 0;
+  border-width: 0 0 1px;
+  transform: translate(-50%, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .island-nav { transition: none; }
+}
+
+/* Wordmark: the intro title at nav size */
+.wordmark {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 0.95rem;
+  letter-spacing: 0.28em;
+  padding-left: calc(0.5rem + 0.28em); /* offsets trailing tracking so the word sits optically centred */
+  color: var(--color-ink);
 }

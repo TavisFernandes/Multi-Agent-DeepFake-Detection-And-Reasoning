@@ -4,7 +4,7 @@ Quick one-shot inspection of the temporal_agent_checkpoint.pth.
 Run with: C:\Python314\python.exe -X utf8 verify_temporal_checkpoint.py
 """
 import sys, io
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 from pathlib import Path
 import torch

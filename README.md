@@ -9,7 +9,7 @@ A multi-agent AI system for detecting deepfakes in images, videos, and audio usi
 - **Context Agent** — Contextual metadata analysis
 
 ## Architecture
-Three-tier: React frontend → Express proxy → FastAPI + PyTorch backend
+Two-tier: React frontend (Vite dev server proxies `/api`) → FastAPI + PyTorch backend
 
 ## Quick Start
 See [veritas/README.md](veritas/README.md) for full setup instructions.

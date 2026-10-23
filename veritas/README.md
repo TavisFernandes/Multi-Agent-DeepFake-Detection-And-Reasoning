@@ -15,7 +15,7 @@ A multi-agent AI system that detects deepfakes in images, videos, and audio usin
 
 ## Setup & Running
 
-Open **three separate terminals** and run each service:
+Open **two separate terminals** and run each service:
 
 ### Terminal 1 — Backend (FastAPI + PyTorch)
 
@@ -29,18 +29,7 @@ python main.py
 
 > First run will take longer as PyTorch downloads are heavy. Subsequent runs are instant.
 
-### Terminal 2 — Proxy (Express.js)
-
-```bash
-cd proxy
-npm install
-node server.js
-```
-
-→ Runs on **http://localhost:3001**
-→ Expected output: `[VERITAS proxy] listening on http://localhost:3001`
-
-### Terminal 3 — Frontend (React + Vite)
+### Terminal 2 — Frontend (React + Vite)
 
 ```bash
 cd frontend
@@ -55,13 +44,11 @@ npm run dev
 ## Architecture
 
 ```
-Browser (5173)
-    │  /api/*
-    ▼
-Proxy — Express.js (3001)
-    │  Translates multipart → NDJSON → SSE
+Browser → Vite dev server (5173)
+    │  /api/* forwarded with the /api prefix stripped (vite.config.ts)
     ▼
 Backend — FastAPI (8000)
+    │  Streams NDJSON: one JSON object per line
     │  Multi-agent inference pipeline
     ├── Spatial Agent   (EfficientNet-B0 + GradCAM)
     ├── Temporal Agent  (R3D-18 video model)
@@ -103,12 +90,11 @@ If checkpoints are missing, agents fall back to mock results so the system still
 ## Tech Stack
 
 - **Frontend**: React 19 + Vite 7 + Tailwind CSS 4 + Framer Motion
-- **Proxy**: Express.js 4 (Node.js, CommonJS, no build step)
 - **Backend**: FastAPI + PyTorch 2.6
 
 ## Notes
 
-- The 50MB file size limit is enforced at both the proxy and backend layers.
-- The proxy implements a 30-second timeout for backend inference requests.
+- The 50MB file size limit is enforced in the browser and in the backend (requests with a larger `Content-Length` are rejected before the upload is read).
+- Vite's `/api` proxy is for local development only. A production deployment needs a web server (e.g. nginx or Caddy) to serve `frontend/dist` and forward `/api` to FastAPI, with its own upload limit and timeouts.
 - GradCAM heatmaps are rendered in the UI when a spatial checkpoint is available.
 - FFmpeg must be installed on the system for audio extraction from video files.

@@ -73,7 +73,7 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
           <motion.div
             key="page-transition-overlay"
             className="fixed inset-0 overflow-hidden pointer-events-none"
-            style={{ zIndex: 9999, background: 'hsl(222 47% 4%)' }}
+            style={{ zIndex: 9999, background: '#f3f5f9' }}
             // Reduced-motion variant: simple opacity fade
             {...(prefersReducedMotion
               ? {

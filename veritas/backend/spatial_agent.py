@@ -59,12 +59,12 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 _HERE = Path(__file__).resolve().parent   # veritas/backend/
 
-# Primary path: veritas/backend/models/spatial_agent.pth
+# Primary path: veritas/backend/models/spatial_agent_lc.pth
 # Fallbacks handle the case where __file__ sits at a different depth.
 _CANDIDATE_PATHS = [
-    _HERE / "models" / "spatial_agent.pth",
-    _HERE / ".." / "backend" / "models" / "spatial_agent.pth",
-    _HERE / ".." / ".." / "backend" / "models" / "spatial_agent.pth",
+    _HERE / "models" / "spatial_agent_lc.pth",
+    _HERE / ".." / "backend" / "models" / "spatial_agent_lc.pth",
+    _HERE / ".." / ".." / "backend" / "models" / "spatial_agent_lc.pth",
 ]
 _CHECKPOINT_PATH: Path = next(
     (p for p in _CANDIDATE_PATHS if p.resolve().exists()),
@@ -141,7 +141,7 @@ def load_model() -> None:
     if not checkpoint_path.exists():
         raise FileNotFoundError(
             f"Spatial Agent checkpoint not found at: {checkpoint_path}\n"
-            f"Expected file: veritas/backend/models/spatial_agent.pth"
+            f"Expected file: veritas/backend/models/spatial_agent_lc.pth"
         )
 
     try:

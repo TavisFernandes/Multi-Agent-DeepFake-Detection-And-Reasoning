@@ -8,7 +8,7 @@ See the complete documentation in [veritas/PRESENTATION_RUNBOOK.md](file:///d:/M
 
 ## Quick Launch Procedure
 
-Open three separate PowerShell terminals:
+Open two separate PowerShell terminals:
 
 ### Terminal 1 — Backend (Port 8000)
 ```powershell
@@ -16,13 +16,7 @@ cd veritas/backend
 py -3.10 main.py
 ```
 
-### Terminal 2 — API Proxy (Port 3001)
-```powershell
-cd veritas/proxy
-node server.js
-```
-
-### Terminal 3 — Frontend (Port 5173)
+### Terminal 2 — Frontend (Port 5173)
 ```powershell
 cd veritas/frontend
 npm run dev
@@ -36,7 +30,4 @@ Open in browser: **http://localhost:5173/console**
 ```powershell
 # Backend Health
 py -3.10 -c "import urllib.request; print(urllib.request.urlopen('http://localhost:8000/healthz').read().decode())"
-
-# Proxy Health
-py -3.10 -c "import urllib.request; print(urllib.request.urlopen('http://localhost:3001/api/health').read().decode())"
 ```

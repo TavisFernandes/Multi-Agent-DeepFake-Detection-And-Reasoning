@@ -42,8 +42,9 @@ for _mod in ("cv2", "fastapi", "fastapi.middleware.cors", "fastapi.responses"):
 import audio_agent
 from main import _compute_verdict, _WEIGHTS
 import train_audio_kaggle
+import train_audio_lc
 
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 print("=" * 65)
 print("VERITAS AUDIO AGENT — INTEGRATION READINESS TEST SUITE")
@@ -135,8 +136,9 @@ check(audio_agent._MEL_TRANSFORM.n_mels == train_audio_kaggle.N_MELS == 128,
 wav_file = str(_HERE / "test_audio.wav")
 if os.path.exists(wav_file):
     inf_tensor = audio_agent._wav_to_tensor(wav_file).cpu()
-    train_tensor, train_err = train_audio_kaggle.wav_to_tensor(wav_file)
-    check(train_err is None, "train_audio_kaggle.wav_to_tensor succeeded on test_audio.wav")
+    # Production loads audio_agent_lc.pth, so parity is against its trainer's preprocessing.
+    train_tensor = train_audio_lc.wav_to_mel_tensor(wav_file)
+    check(train_tensor is not None, "train_audio_lc.wav_to_mel_tensor succeeded on test_audio.wav")
     check(inf_tensor.shape == (1, 3, 224, 224), "Inference tensor shape is (1, 3, 224, 224)")
     check(train_tensor.shape == (3, 224, 224), "Training tensor shape is (3, 224, 224)")
     

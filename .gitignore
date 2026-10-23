@@ -38,8 +38,11 @@ watcher_flag.txt
 
 # Include model checkpoints in the repository via Git LFS
 !veritas/backend/models/*.pth
-# Local IDE settings and backup files
+
+# Local Claude/IDE configuration
 veritas/.claude/settings.local.json
+
+# Backup copies, not production source
 **/*.bak
 
 # Local diagnostic scripts
@@ -47,18 +50,8 @@ veritas/backend/diag_live.py
 veritas/backend/diag_stream.py
 veritas/backend/diagnostic.py
 
-# Local sample media — review before redistribution
+# Local test media â€” do not redistribute dataset samples
 veritas/backend/00025_fake.mp4
 veritas/backend/test_audio.wav
 veritas/backend/test_no_audio.mp4
 veritas/backend/test_pixel.jpg
-
-# Local caches
-.pytest_cache/
-**/__pycache__/
-veritas/backend/training/cache/
-watcher_flag.txt
-
-# Local utility and orphaned lockfile
-watcher.py
-veritas/package-lock.json

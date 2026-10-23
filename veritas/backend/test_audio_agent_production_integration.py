@@ -31,6 +31,7 @@ from torchvision.models import efficientnet_b0
 
 import audio_agent
 import train_audio_kaggle
+import train_audio_lc
 
 PASS = 0
 FAIL = 0
@@ -99,7 +100,8 @@ check(test_wav.exists(), f"Reference audio fixture exists: {test_wav}")
 
 # Preprocessing parity
 prod_tensor = audio_agent._wav_to_tensor(str(test_wav)).cpu()
-stand_tensor, stand_err = train_audio_kaggle.wav_to_tensor(str(test_wav))
+# Production loads audio_agent_lc.pth, so parity is against its trainer's preprocessing.
+stand_tensor, stand_err = train_audio_lc.wav_to_mel_tensor(str(test_wav)), None
 
 check(prod_tensor is not None and stand_err is None, "Both preprocessors succeeded without error")
 check(prod_tensor.shape == (1, 3, 224, 224), f"Production tensor shape is (1, 3, 224, 224) (got {prod_tensor.shape})")

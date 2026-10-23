@@ -32,7 +32,7 @@ sys.path.insert(0, str(_HERE))
 
 from main import _compute_verdict, _WEIGHTS
 
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 BACKEND = "http://127.0.0.1:8000"
 TEST_VIDEO = str(_HERE / "00025_fake.mp4")
@@ -115,6 +115,17 @@ print("VERITAS Score Pipeline — Regression Tests")
 print("=" * 65)
 print()
 
+def expected_corrected_fixed(conf_by_agent, contributing):
+    """Independent mirror of fusion_policy.compute_verdict_corrected_fixed (noisy-OR of visual and audio)."""
+    sp = conf_by_agent["Spatial Analysis"] if "Spatial Analysis" in contributing else None
+    te = conf_by_agent["Temporal Analysis"] if "Temporal Analysis" in contributing else None
+    au = conf_by_agent["Audio Analysis"] if "Audio Analysis" in contributing else None
+    vis = (0.40 * sp + 0.30 * te) / 0.70 if sp is not None and te is not None else (sp if sp is not None else te)
+    if vis is not None and au is not None:
+        return 1.0 - (1.0 - vis) * (1.0 - au)
+    return vis if vis is not None else (au if au is not None else 0.0)
+
+
 # ---------------------------------------------------------------------------
 # Test 1: _compute_verdict produces a float in [0, 1]
 # ---------------------------------------------------------------------------
@@ -163,8 +174,10 @@ else:
               "T4: /analyse Spatial confidence in [0,1]", f"got {api_spatial_conf}")
         check(api_temporal_conf is not None and 0.0 <= api_temporal_conf <= 1.0,
               "T5: /analyse Temporal confidence in [0,1]", f"got {api_temporal_conf}")
-        check(api_audio_conf == 0,
-              "T6: /analyse Audio confidence is 0 (untrained)", f"got {api_audio_conf}")
+        api_audio = agents_by_name.get("Audio Analysis", {})
+        check(api_audio_conf is not None and 0.0 <= api_audio_conf <= 1.0
+              and (api_audio.get("status") != "untrained" or api_audio_conf == 0),
+              "T6: /analyse Audio confidence in [0,1] (0 when untrained)", f"got {api_audio_conf}")
         check(api_overall is not None and 0.0 <= api_overall <= 1.0,
               "T7: /analyse overall_confidence in [0,1]", f"got {api_overall}")
 
@@ -175,19 +188,17 @@ else:
               "T9: /analyse overall not percent-scaled", f"got {api_overall}")
 
         # Cross-check against formula
-        api_expected_conf = round(
-            (api_spatial_conf * _WEIGHTS["Spatial Analysis"] + api_temporal_conf * _WEIGHTS["Temporal Analysis"])
-            / (_WEIGHTS["Spatial Analysis"] + _WEIGHTS["Temporal Analysis"]),
-            4
-        )
-        check(api_overall == api_expected_conf,
+        api_expected_conf = round(expected_corrected_fixed(
+            {n: a.get("confidence") for n, a in agents_by_name.items()}, api_contributing), 4)
+        check(abs(api_overall - api_expected_conf) <= 1e-3,  # agent confidences arrive rounded to 4 dp
               f"T10: /analyse overall_confidence matches normalized formula ({api_expected_conf})",
               f"got {api_overall}")
 
-        check("Audio Analysis" in api_unavailable,
-              "T11: Audio Analysis in unavailable_agents")
-        check("Audio Analysis" not in api_contributing,
-              "T12: Audio Analysis not in contributing_agents")
+        audio_has_verdict = api_audio.get("is_fake") is not None
+        check(("Audio Analysis" in api_unavailable) == (not audio_has_verdict),
+              "T11: Audio Analysis unavailable exactly when it has no verdict")
+        check(("Audio Analysis" in api_contributing) == audio_has_verdict,
+              "T12: Audio Analysis contributes exactly when it has a verdict")
         check("Spatial Analysis" in api_contributing,
               "T13: Spatial Analysis in contributing_agents")
         check("Temporal Analysis" in api_contributing,
@@ -226,8 +237,10 @@ else:
               "T15: stream Spatial confidence in [0,1]", f"got {s_stream_conf}")
         check(t_stream_conf is not None and 0.0 <= t_stream_conf <= 1.0,
               "T16: stream Temporal confidence in [0,1]", f"got {t_stream_conf}")
-        check(au_stream_conf == 0,
-              "T17: stream Audio confidence is 0 (untrained)", f"got {au_stream_conf}")
+        au_stream = stream_agents.get("Audio Analysis", {})
+        check(au_stream_conf is not None and 0.0 <= au_stream_conf <= 1.0
+              and (au_stream.get("status") != "untrained" or au_stream_conf == 0),
+              "T17: stream Audio confidence in [0,1] (0 when untrained)", f"got {au_stream_conf}")
         check(stream_overall is not None and 0.0 <= stream_overall <= 1.0,
               "T18: stream overall_confidence in [0,1]", f"got {stream_overall}")
 
@@ -242,8 +255,8 @@ else:
               f"T21: overall_confidence consistent across both endpoints ({api_overall})",
               f"stream={stream_overall} analyse={api_overall}")
 
-        check("Audio Analysis" in stream_unavailable,
-              "T22: stream Audio Analysis in unavailable_agents")
+        check(("Audio Analysis" in stream_unavailable) == (au_stream.get("is_fake") is None),
+              "T22: stream Audio is unavailable exactly when it has no verdict (is_fake None)")
         check("Spatial Analysis" in stream_contributing,
               "T23: stream Spatial Analysis in contributing_agents")
 
@@ -291,16 +304,18 @@ else:
         au_stream_is_fake = stream_agents.get("Audio Analysis", {}).get("is_fake")
         au_stream_status  = stream_agents.get("Audio Analysis", {}).get("status")
 
-        check(au_stream_is_fake is None,
-              "T28: stream Audio is_fake is None (not coerced to 0 or False)")
-        check(au_stream_status == "untrained",
-              "T29: stream Audio status == 'untrained'", f"got {au_stream_status}")
+        # Status-independent: the proxy must pass None through, never coerce it to 0/False.
+        check(au_stream_is_fake is None or isinstance(au_stream_is_fake, bool),
+              "T28: stream Audio is_fake is None or a real bool (not coerced)", f"got {au_stream_is_fake!r}")
+        check(au_stream_status != "untrained" or au_stream_is_fake is None,
+              "T29: stream Audio has no verdict when untrained", f"status={au_stream_status} is_fake={au_stream_is_fake!r}")
 
         ctx_stream = stream_agents.get("Context Verification", {})
-        check(ctx_stream.get("is_fake") is None,
-              "T30: stream Context is_fake is None")
-        check(ctx_stream.get("status") in ("mocked", "not_applicable"),
-              "T31: stream Context status in ('mocked', 'not_applicable')", f"got {ctx_stream.get('status')}")
+        ctx_is_fake = ctx_stream.get("is_fake")
+        check(ctx_is_fake is None or isinstance(ctx_is_fake, bool),
+              "T30: stream Context is_fake is None or a real bool", f"got {ctx_is_fake!r}")
+        check((ctx_stream.get("status") in ("mocked", "not_applicable")) == (ctx_is_fake is None),
+              "T31: stream Context has no verdict exactly when mocked/not_applicable", f"got {ctx_stream.get('status')}")
     except Exception as exc:
         fail(f"Proxy transparency check failed: {exc}")
 

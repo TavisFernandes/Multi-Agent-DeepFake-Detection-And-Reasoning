@@ -9,12 +9,12 @@ Tests:
  2.  model_state_dict key present
  3.  load_state_dict(strict=True) — 0 missing / 0 unexpected keys
  4.  Architecture: R3D-18  fc=Linear(512,1)
- 5.  Decision threshold from checkpoint == 0.05
+ 5.  Decision threshold from checkpoint == 0.35
  6.  Normalization from checkpoint matches training values
  7.  Dummy tensor (1,3,16,112,112) inference: prob in [0,1]
  8.  load_model() via module API
  9.  Inference on synthetic video — returns correct schema
-10.  is_fake determined by threshold (0.05), not 0.5
+10.  is_fake determined by threshold (0.35), not 0.5
 11.  Image input → is_fake=False, confidence=0.0 (skipped)
 12.  Audio input → temporal skipped
 13.  Spatial Agent still loads and works (regression check)
@@ -32,7 +32,7 @@ import traceback
 import urllib.request
 import json
 
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 PASS = "[PASS]"
 FAIL = "[FAIL]"
@@ -133,7 +133,7 @@ check("Architecture: r3d_18  fc=Linear(512,1)", arch_ok, str(fc))
 # Threshold
 thresh = ckpt.get("decision_threshold")
 check("decision_threshold in checkpoint", thresh is not None, str(thresh))
-check("decision_threshold == 0.05", thresh is not None and abs(thresh - 0.05) < 1e-6,
+check("decision_threshold == 0.35", thresh is not None and abs(thresh - 0.35) < 1e-6,
       str(thresh))
 
 # Normalization
@@ -169,8 +169,8 @@ if not temporal_agent._model_loaded:
         sys.exit(1)
 check("_model_loaded is True",     temporal_agent._model_loaded)
 check("_model is not None",        temporal_agent._model is not None)
-check("_DECISION_THRESHOLD == 0.05",
-      abs(temporal_agent._DECISION_THRESHOLD - 0.05) < 1e-6,
+check("_DECISION_THRESHOLD == 0.35",
+      abs(temporal_agent._DECISION_THRESHOLD - 0.35) < 1e-6,
       str(temporal_agent._DECISION_THRESHOLD))
 check("_MEAN loaded from ckpt (mean[0] ~0.43216)",
       abs(temporal_agent._MEAN[0] - 0.43216) < 1e-4,
@@ -210,9 +210,9 @@ finally:
         os.remove(tmp_vid)
 
 # ---------------------------------------------------------------------------
-# 10. is_fake uses 0.05 threshold not 0.5
+# 10. is_fake uses 0.35 threshold not 0.5
 # ---------------------------------------------------------------------------
-print("\n[10] Threshold check: is_fake uses 0.05 not 0.5 ...")
+print("\n[10] Threshold check: is_fake uses 0.35 not 0.5 ...")
 check("_DECISION_THRESHOLD != 0.5",
       abs(temporal_agent._DECISION_THRESHOLD - 0.5) > 0.1,
       f"threshold={temporal_agent._DECISION_THRESHOLD}")

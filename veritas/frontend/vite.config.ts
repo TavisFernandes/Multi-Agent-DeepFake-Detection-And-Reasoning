@@ -18,9 +18,11 @@ export default defineConfig({
     port: 5173,
     host: '0.0.0.0',
     proxy: {
+      // FastAPI's routes have no /api prefix (e.g. /api/analyse/stream → /analyse/stream).
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/api/, ''),
       },
     },
   },

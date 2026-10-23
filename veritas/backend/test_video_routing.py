@@ -10,7 +10,7 @@ Tests the routing fix in main.py where videos are split into:
 import sys, io, os, json, tempfile
 import urllib.request
 import traceback
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 def make_synthetic_mp4(path: str, num_frames: int = 30, w: int = 112, h: int = 112):
     import cv2

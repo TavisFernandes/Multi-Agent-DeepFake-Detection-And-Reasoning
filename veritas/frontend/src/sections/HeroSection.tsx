@@ -1,117 +1,56 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { ArrowRight, ChevronDown, Shield, CheckCircle2, Layers, Cpu } from 'lucide-react';
-import { usePageTransition } from '@/context/TransitionContext';
-import { useLenis } from '@/components/layout/SmoothScroll';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import GradientASCII from '@/components/ui/GradientASCII';
 
-const FADE_IN = {
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
-};
+const ASCII_COLORS = ['#1e3fd8', '#4f7bff', '#a5d8ff', '#eaf3ff'];
+const EASE = [0.16, 1, 0.3, 1] as const;
 
-export function HeroSection() {
-  const { navigateTo } = usePageTransition();
-  const { scrollTo } = useLenis();
+// `ready` is false while the intro overlay is up, so the ASCII decode plays as the reveal.
+export function HeroSection({ ready }: { ready: boolean }) {
+  // As the models sheet rises, the hero recedes like a page behind a modal.
+  const { scrollY } = useScroll();
+  const progress = useTransform(scrollY, (y) => Math.min(y / window.innerHeight, 1));
+  const scale = useTransform(progress, [0, 1], [1, 0.93]);
+  const radius = useTransform(progress, [0, 1], [0, 28]);
+  const scrim = useTransform(progress, [0, 1], [0, 0.25]);
 
   return (
-    <section
-      id="hero"
-      className="relative min-h-[92vh] flex flex-col justify-center pt-28 pb-20 px-6 max-w-6xl mx-auto border-b border-white/[0.06]"
-    >
-      {/* Subtle background gradient highlight */}
-      <div 
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-blue-600/[0.04] rounded-full blur-[140px] pointer-events-none" 
-        aria-hidden="true"
-      />
+    <section id="hero" className="sticky top-0 h-[100svh] min-h-[560px] w-full overflow-hidden bg-[#dde3ee]">
+      <motion.div style={{ scale, borderRadius: radius }} className="relative h-full w-full overflow-hidden bg-paper">
+        {ready && (
+          <GradientASCII
+            style={{ position: 'absolute', inset: 0 }}
+            colors={ASCII_COLORS}
+            shape="rise"
+            lightMode
+            cellSize={16}
+            density={0.8}
+            scale={1.1}
+            glow={0.15}
+            aria-hidden="true"
+          />
+        )}
 
-      <div className="relative z-10 max-w-4xl">
-        {/* Status indicator badge */}
-        <motion.div
-          {...FADE_IN}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full border border-white/[0.1] bg-white/[0.03] backdrop-blur-sm text-xs font-mono text-zinc-400 mb-8"
+        <div className="relative z-10 flex h-full flex-col items-center justify-center px-6 pb-16 text-center">
+          <motion.h1
+            initial={{ opacity: 0, y: 14 }}
+            animate={ready ? { opacity: 1, y: 0 } : undefined}
+            transition={{ duration: 1, delay: 0.6, ease: EASE }}
+            className="hero-title max-w-[13ch] text-ink"
+          >
+            Find out if a video is real.
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={ready ? { opacity: 1 } : undefined}
+          transition={{ duration: 1, delay: 1, ease: EASE }}
+          className="mt-6 max-w-[46ch] text-base leading-relaxed text-ink/70 sm:text-lg"
         >
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-60" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
-          </span>
-          <span className="text-zinc-300 font-medium tracking-wide">VERITAS 1.0</span>
-          <span className="text-zinc-600">|</span>
-          <span className="text-zinc-400">Multi-Agent Synthetic Media Forensics</span>
-        </motion.div>
-
-        {/* Main Headline */}
-        <motion.h1
-          {...FADE_IN}
-          transition={{ duration: 0.6, delay: 0.15 }}
-          className="text-4xl sm:text-6xl md:text-7xl font-sans font-semibold tracking-tight text-white leading-[1.08] mb-6"
-        >
-          Deepfake detection driven by <span className="text-zinc-400">multi-modal evidence</span>.
-        </motion.h1>
-
-        {/* Subheading */}
-        <motion.p
-          {...FADE_IN}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-lg sm:text-xl text-zinc-400 max-w-2xl font-normal leading-relaxed mb-10"
-        >
-          VERITAS coordinates four specialized neural agents across spatial, temporal, acoustic, and cross-modal dimensions to produce explainable authenticity assessments on digital media.
+          VERITAS runs four forensic models over the faces, motion, audio and context in your media,
+          then shows you the evidence behind every verdict.
         </motion.p>
-
-        {/* Primary Action Buttons */}
-        <motion.div
-          {...FADE_IN}
-          transition={{ duration: 0.6, delay: 0.25 }}
-          className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 mb-16"
-        >
-          <button
-            onClick={() => navigateTo('/console')}
-            data-testid="button-hero-launch-console"
-            className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 font-medium text-sm tracking-tight transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
-          >
-            <span>Launch Verification Console</span>
-            <ArrowRight className="w-4 h-4 text-zinc-950" />
-          </button>
-
-          <button
-            onClick={() => scrollTo('#how-it-works')}
-            data-testid="button-hero-learn-more"
-            className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-zinc-300 hover:text-white font-medium text-sm tracking-tight transition-all duration-200 cursor-pointer"
-          >
-            <span>Explore Architecture</span>
-            <ChevronDown className="w-4 h-4 text-zinc-400" />
-          </button>
-        </motion.div>
-
-        {/* Technical Specification Bar */}
-        <motion.div
-          {...FADE_IN}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-8 border-t border-white/[0.08]"
-        >
-          <div>
-            <div className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-1">Spatial Agent</div>
-            <div className="text-sm font-medium text-zinc-200">EfficientNet-B0</div>
-            <div className="text-xs text-zinc-500 font-mono mt-0.5">GradCAM Heatmaps</div>
-          </div>
-          <div>
-            <div className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-1">Temporal Agent</div>
-            <div className="text-sm font-medium text-zinc-200">R3D-18 Conv3D</div>
-            <div className="text-xs text-zinc-500 font-mono mt-0.5">16-Frame Tensor Window</div>
-          </div>
-          <div>
-            <div className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-1">Audio Agent</div>
-            <div className="text-sm font-medium text-zinc-200">Mel-Spectrogram CNN</div>
-            <div className="text-xs text-zinc-500 font-mono mt-0.5">128 Mel-Band Analysis</div>
-          </div>
-          <div>
-            <div className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-1">Production Fusion</div>
-            <div className="text-sm font-medium text-blue-400 font-mono">corrected_fixed</div>
-            <div className="text-xs text-zinc-500 font-mono mt-0.5">Dynamic-Denominator</div>
-          </div>
-        </motion.div>
       </div>
+      <motion.div style={{ opacity: scrim }} className="pointer-events-none absolute inset-0 bg-ink" aria-hidden="true" />
+      </motion.div>
     </section>
   );
 }

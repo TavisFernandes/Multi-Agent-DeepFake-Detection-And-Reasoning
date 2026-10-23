@@ -78,6 +78,7 @@ class PPOTrainerV3:
         c_ent: float = 0.01,
         device: Optional[torch.device] = None,
         seed: int = 42,
+        epochs: int = 20,
     ):
         self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.train_records = train_records
@@ -94,7 +95,7 @@ class PPOTrainerV3:
 
         self.network = ActorCriticNetwork(STATE_DIM, ACTION_DIM).to(self.device)
         self.optimizer = optim.Adam(self.network.parameters(), lr=lr, eps=1e-5)
-        self.scheduler = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=20)
+        self.scheduler = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=epochs)
 
     def collect_rollout(self, batch_size: int = 512) -> Dict[str, torch.Tensor]:
         self.network.eval()
@@ -269,7 +270,7 @@ class PPOTrainerV3:
         }
 
 
-def run_ppo_training():
+def run_ppo_training(seed: int = 42, epochs: int = 20, out: Path = CHECKPOINT_OUT):
     logger.info("=" * 80)
     logger.info("VERITAS PPO v3 ADAPTIVE FUSION TRAINING")
     logger.info("=" * 80)
@@ -303,12 +304,13 @@ def run_ppo_training():
         c_val=0.50,
         c_ent=0.01,
         device=device,
-        seed=42,
+        seed=seed,
+        epochs=epochs,
     )
 
-    best_val_f1 = -1.0
+    # Select on balanced accuracy: val is ~77% fake, so F1 rewards flagging everything.
+    best_val_score = -1.0
     best_metrics = {}
-    epochs = 20
 
     start_time = time.time()
     for ep in range(1, epochs + 1):
@@ -326,8 +328,8 @@ def run_ppo_training():
             val_metrics["val_accuracy"] * 100, val_metrics["val_f1"], val_metrics["val_category_acc"] * 100,
         )
 
-        if val_metrics["val_f1"] > best_val_f1:
-            best_val_f1 = val_metrics["val_f1"]
+        if val_metrics["val_balanced_acc"] > best_val_score:
+            best_val_score = val_metrics["val_balanced_acc"]
             best_metrics = {
                 "epoch": ep,
                 "reward": rollout["mean_reward"],
@@ -336,7 +338,7 @@ def run_ppo_training():
             }
             # Save PPO v3 checkpoint
             checkpoint_payload = {
-                "version": "ppo_fusion_policy_v3",
+                "version": out.stem,
                 "model_state_dict": trainer.network.state_dict(),
                 "actor_state_dict": trainer.network.actor_net.state_dict(),
                 "actor_log_std": trainer.network.actor_log_std.cpu().tolist(),
@@ -354,13 +356,15 @@ def run_ppo_training():
                         "temporal": "temporal_agent_lc.pth",
                         "audio": "audio_agent_lc.pth",
                     },
-                    "seed": 42,
+                    "seed": seed,
+                    "epochs": epochs,
+                    "selection_metric": "val_balanced_acc",
                     "date": time.strftime("%Y-%m-%d %H:%M:%S"),
                 },
             }
-            CHECKPOINT_OUT.parent.mkdir(parents=True, exist_ok=True)
-            torch.save(checkpoint_payload, CHECKPOINT_OUT)
-            logger.info(">>> New best PPO v3 checkpoint saved to %s (Val F1: %.4f)", CHECKPOINT_OUT, best_val_f1)
+            out.parent.mkdir(parents=True, exist_ok=True)
+            torch.save(checkpoint_payload, out)
+            logger.info(">>> New best PPO checkpoint saved to %s (Val BalAcc: %.4f)", out, best_val_score)
 
     total_time = time.time() - start_time
     logger.info("=" * 80)
@@ -370,4 +374,9 @@ def run_ppo_training():
 
 
 if __name__ == "__main__":
-    run_ppo_training()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--epochs", type=int, default=20)
+    parser.add_argument("--out", type=Path, default=CHECKPOINT_OUT)
+    args = parser.parse_args()
+    run_ppo_training(args.seed, args.epochs, args.out)

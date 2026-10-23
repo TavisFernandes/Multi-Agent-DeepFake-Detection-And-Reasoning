@@ -24,7 +24,7 @@ from pathlib import Path
 # Setup path and encoding
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE))
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 import numpy as np
 import torch

@@ -136,6 +136,8 @@ CATEGORY_TO_IDX = {cat: idx for idx, cat in enumerate(CATEGORIES)}
 IDX_TO_CATEGORY = {idx: cat for idx, cat in enumerate(CATEGORIES)}
 
 _HERE = Path(__file__).resolve().parent
+# v4: train_ppo_v3.py --seed 2 --epochs 300, on scores from the *_lc detectors production now loads.
+DEFAULT_V4_CHECKPOINT_PATH = _HERE / "models" / "ppo_fusion_policy_v4.pth"
 DEFAULT_V2_CHECKPOINT_PATH = _HERE / "models" / "ppo_fusion_policy_v2.pth"
 DEFAULT_CHECKPOINT_PATH = _HERE / "models" / "ppo_fusion_policy.pth"
 
@@ -640,9 +642,11 @@ class PPOFusionPolicy:
         self.is_loaded = False
         self.checkpoint_metadata: Dict[str, Any] = {}
 
-        # Prioritize v2 checkpoint if it exists, otherwise fall back to original v1
+        # Prefer v4, then v2, then the original v1
         if checkpoint_path:
             ckpt = Path(checkpoint_path)
+        elif DEFAULT_V4_CHECKPOINT_PATH.exists():
+            ckpt = DEFAULT_V4_CHECKPOINT_PATH
         elif DEFAULT_V2_CHECKPOINT_PATH.exists():
             ckpt = DEFAULT_V2_CHECKPOINT_PATH
         else:

@@ -28,7 +28,7 @@ from typing import AsyncIterator
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 import spatial_agent
 from temporal_agent import run_temporal_agent
@@ -59,13 +59,34 @@ app = FastAPI(
     version="1.2.0",
 )
 
+# Multipart framing (boundary lines, part headers) adds a little on top of the 50 MB file itself.
+_MAX_REQUEST_BYTES = 50 * 1024 * 1024 + 1024 * 1024
+
+
+class RejectOversizedRequests:
+    """Answer 413 from Content-Length before Starlette reads the multipart body.
+    The routes' own 50 MB check stays authoritative: Content-Length can be absent (chunked uploads)."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http":
+            length = dict(scope["headers"]).get(b"content-length", b"")
+            if length.isdigit() and int(length) > _MAX_REQUEST_BYTES:
+                response = JSONResponse({"detail": "File exceeds 50MB limit."}, status_code=413)
+                return await response(scope, receive, send)
+        await self.app(scope, receive, send)
+
+
+# Added before CORS so CORS wraps it and the 413 still carries CORS headers.
+app.add_middleware(RejectOversizedRequests)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
-        "http://localhost:3001",
-        "http://127.0.0.1:3001",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -235,7 +256,8 @@ def _decision_payload(details: dict) -> dict:
 
 def _extract_video_frame(video_path: str) -> str | None:
     """
-    Extract the middle frame from a video and save it to a temporary JPEG file.
+    Extract the middle frame from a video and save it to a temporary PNG file
+    (lossless, so the spatial agent sees the decoded frame as in training).
     Returns the path to the temporary file, or None if extraction fails.
     """
     cap = cv2.VideoCapture(video_path)
@@ -259,7 +281,7 @@ def _extract_video_frame(video_path: str) -> str | None:
             logger.warning("Could not read any frames from video %s", video_path)
             return None
             
-        fd, tmp_img_path = tempfile.mkstemp(suffix=".jpg")
+        fd, tmp_img_path = tempfile.mkstemp(suffix=".png")
         os.close(fd)
         
         success = cv2.imwrite(tmp_img_path, frame)
@@ -597,17 +619,13 @@ async def analyse(
         if resolved_media_type not in ("image", "video", "audio"):
             resolved_media_type = _detect_media_type(filename)
 
+        contents = await file.read()
+        if len(contents) > 50 * 1024 * 1024:
+            raise HTTPException(status_code=413, detail="File exceeds 50MB limit.")
         suffix = Path(filename).suffix or ".tmp"
         tmp_fd, tmp_path = tempfile.mkstemp(suffix=suffix)
-        try:
-            contents = await file.read()
-            if len(contents) > 50 * 1024 * 1024:
-                raise HTTPException(status_code=413, detail="File exceeds 50MB limit.")
-            with os.fdopen(tmp_fd, "wb") as fh:
-                fh.write(contents)
-        except Exception:
-            os.close(tmp_fd)
-            raise
+        with os.fdopen(tmp_fd, "wb") as fh:  # the finally block below removes tmp_path
+            fh.write(contents)
 
         agents = _build_agents(tmp_path, resolved_media_type)
         overall_confidence, verdict, contributing, unavailable, details = _compute_verdict(
@@ -671,17 +689,21 @@ async def analyse_stream(
         resolved_media_type = _detect_media_type(filename)
 
     # Save the upload to a temp file up front so the stream can reference it
+    try:
+        contents = await file.read()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Could not read uploaded file.")
+    if len(contents) > 50 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="File exceeds 50MB limit.")
+
     suffix = Path(filename).suffix or ".tmp"
     tmp_fd, tmp_path = tempfile.mkstemp(suffix=suffix)
     try:
-        contents = await file.read()
-        if len(contents) > 50 * 1024 * 1024:
-            raise HTTPException(status_code=413, detail="File exceeds 50MB limit.")
         with os.fdopen(tmp_fd, "wb") as fh:
             fh.write(contents)
     except Exception:
-        os.close(tmp_fd)
-        raise HTTPException(status_code=400, detail="Could not read uploaded file.")
+        os.remove(tmp_path)  # no stream will run, so nothing else will clean it up
+        raise HTTPException(status_code=500, detail="Could not store uploaded file.")
 
     async def generate():
         try:
