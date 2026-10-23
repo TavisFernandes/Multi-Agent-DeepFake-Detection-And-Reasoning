@@ -543,7 +543,8 @@ function VerdictPanel({
   }
 
   const weights = Object.entries(verdict.dynamic_weights ?? {}).sort((a, b) => b[1] - a[1]);
-  const categories = Object.entries(verdict.category_probabilities ?? {}).sort((a, b) => b[1] - a[1]);
+  // UNVERIFIED carries placeholder zeros (score 0, confidence 1), not evidence, so none of them are shown.
+  const categories = isUnverified ? [] : Object.entries(verdict.category_probabilities ?? {}).sort((a, b) => b[1] - a[1]);
 
   return (
     <motion.div
@@ -555,13 +556,13 @@ function VerdictPanel({
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h2 className={`text-4xl font-medium tracking-[-0.035em] sm:text-5xl ${color}`}>{headline}</h2>
         <div className="text-right">
-          <p className={`font-mono text-4xl ${color}`}>{pct(fakeScore)}</p>
-          <p className="text-sm text-ink/55">fused fake score</p>
+          <p className={`font-mono text-4xl ${color}`}>{isUnverified ? '—' : pct(fakeScore)}</p>
+          <p className="text-sm text-ink/55">{isUnverified ? 'no fused score' : 'fused fake score'}</p>
         </div>
       </div>
       <p className="mt-3 max-w-[62ch] text-sm leading-relaxed text-ink/70">{subtitle}</p>
 
-      <ScoreScale score={fakeScore} low={low} high={high} />
+      <ScoreScale score={isUnverified ? undefined : fakeScore} low={low} high={high} />
 
       {(weights.length > 0 || categories.length > 0) && (
         <div className="mt-8 grid gap-8 border-t border-ink/10 pt-6 sm:grid-cols-2">
@@ -587,7 +588,7 @@ function VerdictPanel({
       <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-ink/10 pt-5 text-xs text-ink/55">
         <span>
           Fusion: <span className="font-mono text-ink/80">{verdict.fusion_method ?? 'corrected_fixed'}</span>
-          {verdict.decision_confidence != null && <>, decision confidence <span className="font-mono text-ink/80">{pct(verdict.decision_confidence)}</span></>}
+          {verdict.decision_confidence != null && !isUnverified && <>, decision confidence <span className="font-mono text-ink/80">{pct(verdict.decision_confidence)}</span></>}
         </span>
         <button
           onClick={onDownload}
