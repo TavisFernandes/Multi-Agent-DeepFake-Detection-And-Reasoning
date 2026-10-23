@@ -1,0 +1,29 @@
+fit fusion_train: 795 with audio of 795 records (331 fake audio, 464 real)
+eval fusion_val:  215 with audio of 215 records (86 fake audio, 129 real)
+Platt: p = sigmoid(6.5799*logit(raw) + -9.0543); threshold 0.5 throughout
+
+  raw      Brier=0.0634 ECE=0.1745 AUC=0.9997  real audio called fake 16/129  fake audio called real 0/86
+  platt    Brier=0.0061 ECE=0.0111 AUC=0.9997  real audio called fake 1/129  fake audio called real 0/86
+  isotonic Brier=0.0082 ECE=0.0083 AUC=0.9992  real audio called fake 2/129  fake audio called real 0/86
+
+  feature-cache vs live decode (fusion_val, n=215): max |diff| = 4.98e-05
+
+  by decoding format (fusion_val live re-decode; Brier / ECE / counts):
+   center    raw      Brier=0.0634 ECE=0.1745  real audio called fake 16/129  fake audio called real 0/86
+   center    platt    Brier=0.0061 ECE=0.0111  real audio called fake 1/129  fake audio called real 0/86
+   center    isotonic Brier=0.0082 ECE=0.0083  real audio called fake 2/129  fake audio called real 0/86
+   mp3_64k   raw      Brier=0.0743 ECE=0.2112  real audio called fake 20/129  fake audio called real 0/86
+   mp3_64k   platt    Brier=0.0217 ECE=0.0359  real audio called fake 0/129  fake audio called real 7/86
+   mp3_64k   isotonic Brier=0.0247 ECE=0.0347  real audio called fake 0/129  fake audio called real 6/86
+   aac_64k   raw      Brier=0.0620 ECE=0.1590  real audio called fake 14/129  fake audio called real 0/86
+   aac_64k   platt    Brier=0.0196 ECE=0.0278  real audio called fake 2/129  fake audio called real 3/86
+   aac_64k   isotonic Brier=0.0261 ECE=0.0180  real audio called fake 3/129  fake audio called real 3/86
+   wav44st   raw      Brier=0.0941 ECE=0.2390  real audio called fake 29/129  fake audio called real 0/86
+   wav44st   platt    Brier=0.0065 ECE=0.0128  real audio called fake 1/129  fake audio called real 0/86
+   wav44st   isotonic Brier=0.0046 ECE=0.0038  real audio called fake 1/129  fake audio called real 0/86
+   gain-6    raw      Brier=0.0666 ECE=0.1857  real audio called fake 17/129  fake audio called real 0/86
+   gain-6    platt    Brier=0.0170 ECE=0.0365  real audio called fake 1/129  fake audio called real 4/86
+   gain-6    isotonic Brier=0.0194 ECE=0.0225  real audio called fake 1/129  fake audio called real 3/86
+   gain+6    raw      Brier=0.0535 ECE=0.1417  real audio called fake 11/129  fake audio called real 0/86
+   gain+6    platt    Brier=0.0117 ECE=0.0083  real audio called fake 2/129  fake audio called real 1/86
+   gain+6    isotonic Brier=0.0140 ECE=0.0112  real audio called fake 3/129  fake audio called real 1/86

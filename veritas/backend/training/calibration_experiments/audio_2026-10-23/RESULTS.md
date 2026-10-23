@@ -1,5 +1,12 @@
 # Audio calibration experiment (2026-10-23) — archived, NOT deployed
 
+> **⚠ SUPERSEDED — fit data corrupted by WAV-cache filename collisions.** The fusion_train scores these
+> calibrators were fitted on came from `cache/fusion_features_lc_v3.json`, whose WAV cache keyed files by
+> `{identity}_{stem}` only. 34 fusion_train and 4 fusion_val records were scored on another file's audio
+> (`../../dataset_audit/wav_cache_v1_audit.json`). Do not use these numbers or `audio_platt.json` for any
+> decision. The re-evaluation on collision-free features is in `../audio_2026-10-23_corrected/RESULTS.md`.
+> This file is kept unchanged below for the audit trail.
+
 **Decision:** production keeps raw audio scores (`sigmoid(logit)` vs the checkpoint `decision_threshold` = 0.50).
 Neither Platt nor isotonic is applied anywhere in the serving path. Kept here for comparison after Phase 3.
 
