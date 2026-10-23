@@ -12,7 +12,7 @@ val loss. detector_val (106 clips) saturates at F1 = 1.0 from epoch 1. `--augmen
 (MP3 64k, AAC 64k, 44.1 kHz stereo) with p 0.5, random 3 s window, gain ±6 dB with p 0.5, white noise at
 SNR 15–40 dB with p 0.3.
 
-| Run | Checkpoint (local, not committed) | SHA-256 | Epoch kept | Train time | Peak RAM | Min free commit | Peak GPU |
+| Run | Checkpoint (committed in `models/`) | SHA-256 | Epoch kept | Train time | Peak RAM | Min free commit | Peak GPU |
 |---|---|---|---|---|---|---|---|
 | production | `audio_agent_lc.pth` | `cc47d83b…` | — | — | — | — | — |
 | noaug s0 | `audio_agent_lc_v2_noaug_s0.pth` | `31e70e4d…` | 3 | 171 s | 8.0 GB | 7.0 GB | 2.7 GB |
@@ -21,6 +21,19 @@ SNR 15–40 dB with p 0.3.
 | aug s1 | `audio_agent_lc_v2_aug_s1.pth` | `d40911c9…` | 3 | 325 s | 5.0 GB | 11.0 GB | 2.5 GB |
 
 RTX 4050 Laptop 6 GB, `D:\VERITAS_TRAINING\.venv` (torch 2.6.0+cu124). Runs were sequential, under a commit watchdog.
+
+The four v2 candidates are committed so later system-level evaluation can use these exact files. Each checkpoint
+also stores its own `training_provenance` (manifest file and SHA-256, WAV preprocessing, augmentation config,
+seed, epochs, clip counts). Full SHA-256:
+
+```
+cc47d83bcff5f119b2703d0162322dd46a3dd6d8ac054eca7d66998a0a0e9f72  audio_agent_lc.pth (production, unchanged)
+31e70e4dfcb5e6c0ab1180983aa3e09792357486881dbfccbb8211f894e9bd90  audio_agent_lc_v2_noaug_s0.pth
+154b3cc24ea543907e8ea4b4644f7a8556127e6c7054068d215c0b83a8caf38a  audio_agent_lc_v2_noaug_s1.pth
+8b7916f51a3e588b03e3c742f759db513fee63d785988c0e593771e6d4485443  audio_agent_lc_v2_aug_s0.pth
+d40911c9979eddfe6137a912a49d3cc51967f265a3ee8e3f1e4c4e15f95ad673  audio_agent_lc_v2_aug_s1.pth
+```
+Training manifest for all four: `leakage_controlled_split_manifest_v3.json`, SHA-256 `9313dcc7…357b17`.
 
 ## fusion_val (215 clips: 129 real audio, 86 fake audio), threshold 0.5
 `python eval_audio_robustness.py OUT.json <checkpoints…>`: one run scores every checkpoint on the same
