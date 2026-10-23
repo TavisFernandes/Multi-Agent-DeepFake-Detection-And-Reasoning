@@ -71,15 +71,18 @@ Files the backend loads from `backend/models/` (leakage-controlled training, see
 
 | Agent | File loaded | Notes |
 |-------|-------------|-------|
-| Spatial | `spatial_agent_lc.pth` | EfficientNet-B0, threshold 0.50 |
+| Spatial | `spatial_agent_lc_v2_aug_s0.pth` | EfficientNet-B0 trained with compression/resize/blur/crop augmentation, threshold 0.50 |
 | Temporal | `temporal_agent_lc.pth` | R3D-18, threshold 0.35 (from the checkpoint) |
-| Audio | `audio_agent_lc.pth` | EfficientNet-B0 on mel spectrogram, threshold 0.50 |
+| Audio | `audio_agent_lc_v2_aug_s1.pth` | EfficientNet-B0 on mel spectrogram, corrected labels + codec/gain/noise augmentation, threshold 0.50 |
 | Face detector | `face_detection_yunet_2023mar.onnx` | OpenCV YuNet, crops faces for Spatial/Temporal |
 | PPO fusion (`VERITAS_FUSION_MODE=ppo` only) | `ppo_fusion_policy_v4.pth` | Experimental; production uses `corrected_fixed` |
 | Context | none | Explanation only: restates the visual–audio score gap, never votes |
 
 The older `spatial_agent.pth`, `temporal_agent_checkpoint.pth`, `audio_agent_checkpoint.pth` and
-`ppo_fusion_policy{,_v2,_v3}.pth` are kept for reference and are not loaded.
+`ppo_fusion_policy{,_v2,_v3}.pth` are kept for reference and are not loaded. The previous production detectors
+`spatial_agent_lc.pth` and `audio_agent_lc.pth` are kept for rollback: set `VERITAS_SPATIAL_CHECKPOINT` /
+`VERITAS_AUDIO_CHECKPOINT` to those file names. `GET /healthz` reports the checkpoint each detector loaded.
+PPO v4 was trained on the previous detectors' scores and has not been re-validated with the v2 detectors.
 
 If a checkpoint is missing, that agent reports itself unavailable and is left out of fusion; no score is invented.
 

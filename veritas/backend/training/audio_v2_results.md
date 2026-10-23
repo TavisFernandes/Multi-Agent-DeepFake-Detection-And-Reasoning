@@ -1,6 +1,7 @@
 # Audio detector v2 — corrected audio, with/without augmentation (2026-10-23)
 
-**Status: development comparison only. Production still loads `models/audio_agent_lc.pth` (unchanged).**
+**Status (2026-10-24): production loads `audio_agent_lc_v2_aug_s1.pth`; `audio_agent_lc.pth` is kept for rollback
+(`VERITAS_AUDIO_CHECKPOINT=audio_agent_lc.pth`). Selection rationale and system-level check: `spatial_v2_results.md`.**
 fusion_val was used to compare these runs, so its numbers are optimistic for whichever run is picked. Each
 result needs confirming on an independent evaluation collection before any real-world claim. `final_test` was
 not used.
@@ -27,7 +28,7 @@ also stores its own `training_provenance` (manifest file and SHA-256, WAV prepro
 seed, epochs, clip counts). Full SHA-256:
 
 ```
-cc47d83bcff5f119b2703d0162322dd46a3dd6d8ac054eca7d66998a0a0e9f72  audio_agent_lc.pth (production, unchanged)
+cc47d83bcff5f119b2703d0162322dd46a3dd6d8ac054eca7d66998a0a0e9f72  audio_agent_lc.pth (previous production, kept for rollback)
 31e70e4dfcb5e6c0ab1180983aa3e09792357486881dbfccbb8211f894e9bd90  audio_agent_lc_v2_noaug_s0.pth
 154b3cc24ea543907e8ea4b4644f7a8556127e6c7054068d215c0b83a8caf38a  audio_agent_lc_v2_noaug_s1.pth
 8b7916f51a3e588b03e3c742f759db513fee63d785988c0e593771e6d4485443  audio_agent_lc_v2_aug_s0.pth

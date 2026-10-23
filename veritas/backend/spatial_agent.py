@@ -41,6 +41,7 @@ decision: fake_probability >= 0.50 → FAKE
 
 import base64
 import logging
+import os
 from pathlib import Path
 from typing import Optional
 
@@ -61,12 +62,14 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 _HERE = Path(__file__).resolve().parent   # veritas/backend/
 
-# Primary path: veritas/backend/models/spatial_agent_lc.pth
+# Primary path: veritas/backend/models/<_CHECKPOINT_NAME>
 # Fallbacks handle the case where __file__ sits at a different depth.
+# Default: augmented v2 (training/spatial_v2_results.md); rollback: VERITAS_SPATIAL_CHECKPOINT=spatial_agent_lc.pth
+_CHECKPOINT_NAME = os.environ.get("VERITAS_SPATIAL_CHECKPOINT", "spatial_agent_lc_v2_aug_s0.pth")
 _CANDIDATE_PATHS = [
-    _HERE / "models" / "spatial_agent_lc.pth",
-    _HERE / ".." / "backend" / "models" / "spatial_agent_lc.pth",
-    _HERE / ".." / ".." / "backend" / "models" / "spatial_agent_lc.pth",
+    _HERE / "models" / _CHECKPOINT_NAME,
+    _HERE / ".." / "backend" / "models" / _CHECKPOINT_NAME,
+    _HERE / ".." / ".." / "backend" / "models" / _CHECKPOINT_NAME,
 ]
 _CHECKPOINT_PATH: Path = next(
     (p for p in _CANDIDATE_PATHS if p.resolve().exists()),
@@ -143,7 +146,7 @@ def load_model() -> None:
     if not checkpoint_path.exists():
         raise FileNotFoundError(
             f"Spatial Agent checkpoint not found at: {checkpoint_path}\n"
-            f"Expected file: veritas/backend/models/spatial_agent_lc.pth"
+            f"Expected file: veritas/backend/models/{_CHECKPOINT_NAME}"
         )
 
     try:

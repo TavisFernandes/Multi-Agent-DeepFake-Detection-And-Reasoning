@@ -122,7 +122,17 @@ async def startup_event() -> None:
             logger.info("PPO Fusion Policy loaded successfully.")
     except Exception as _fe:
         logger.warning("PPO Fusion Policy startup load notice: %s", _fe)
+    for name, loaded in _loaded_models().items():
+        logger.info("Detector checkpoint: %s", f"{name} = {loaded}")
     logger.info("Startup complete.")
+
+
+def _loaded_models() -> dict:
+    """Checkpoint file each detector loaded (None if not loaded); audio/temporal load at import, before logging is set up."""
+    import audio_agent as _aa
+    import temporal_agent as _ta
+    return {name: m._CHECKPOINT_PATH.name if m._model_loaded else None
+            for name, m in (("spatial", spatial_agent), ("temporal", _ta), ("audio", _aa))}
 
 
 # ---------------------------------------------------------------------------
@@ -611,7 +621,7 @@ async def _stream_agents(
 # ---------------------------------------------------------------------------
 @app.get("/healthz")
 async def healthz() -> dict:
-    return {"status": "ok"}
+    return {"status": "ok", "models": _loaded_models()}
 
 
 # ── Legacy blocking endpoint (unchanged behaviour) ───────────────────────────

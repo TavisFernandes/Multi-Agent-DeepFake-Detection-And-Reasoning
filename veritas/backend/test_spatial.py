@@ -5,7 +5,7 @@ test_spatial.py
 Comprehensive verification test for the VERITAS Spatial Agent.
 
 Tests:
- 1.  Model path resolves to veritas/backend/models/spatial_agent_lc.pth
+ 1.  Model path resolves to veritas/backend/models/<spatial_agent._CHECKPOINT_NAME>
  2.  File exists on disk
  3.  Checkpoint loads successfully
  4.  checkpoint["state_dict"] exists
@@ -66,16 +66,15 @@ except Exception as e:
 # ---------------------------------------------------------------------------
 resolved = spatial_agent._CHECKPOINT_PATH.resolve()
 print(f"\n[1] Resolved checkpoint path: {resolved}")
-# Verify the tail matches  veritas/backend/models/spatial_agent_lc.pth
-tail = Path(*resolved.parts[-3:])   # last 3 parts: models / spatial_agent_lc.pth → adjust
+# Verify the tail matches  veritas/backend/models/<selected checkpoint>
 parts = resolved.parts
 correct_tail = (
     len(parts) >= 3
-    and parts[-1] == "spatial_agent_lc.pth"
+    and parts[-1] == spatial_agent._CHECKPOINT_NAME
     and parts[-2] == "models"
     and parts[-3] == "backend"
 )
-check("Path tail is veritas/backend/models/spatial_agent_lc.pth", correct_tail,
+check(f"Path tail is veritas/backend/models/{spatial_agent._CHECKPOINT_NAME}", correct_tail,
       f"tail = {'/'.join(parts[-3:])}")
 
 # ---------------------------------------------------------------------------

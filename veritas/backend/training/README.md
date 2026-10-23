@@ -2,8 +2,9 @@
 
 ## Current pipeline: leakage-controlled (`*_lc`) — what production loads
 
-Production loads `spatial_agent_lc.pth`, `temporal_agent_lc.pth` and `audio_agent_lc.pth`; `ppo` mode loads
-`ppo_fusion_policy_v4.pth`. All of them come from the 5-way identity-disjoint split in
+Production loads `spatial_agent_lc_v2_aug_s0.pth` (`spatial_v2_results.md`), `temporal_agent_lc.pth` and
+`audio_agent_lc_v2_aug_s1.pth` (`audio_v2_results.md`); `ppo` mode loads `ppo_fusion_policy_v4.pth`, which was
+trained on the previous detectors (`spatial_agent_lc.pth`, `audio_agent_lc.pth`, kept for rollback). All of them come from the 5-way identity-disjoint split in
 `leakage_controlled_split_manifest.json` (detector_train / detector_val / fusion_train / fusion_val / final_test).
 
 **Environment:** `pip install -r ../requirements-lock.txt -r ../requirements-training.txt`.
@@ -63,9 +64,9 @@ Audio calibration (Platt/isotonic) is **not deployed**. See
 Run from `veritas/backend/training/`, in order:
 
 ```bash
-python train_spatial_lc.py           # -> models/spatial_agent_lc.pth   (selected on detector_val)
+python train_spatial_lc.py --augment --seed 0 --out ../models/spatial_agent_lc_v2_aug_s0.pth  # robust-AUC selection on detector_val
 python train_temporal_lc.py          # -> models/temporal_agent_lc.pth  (selected on detector_val)
-python train_audio_lc.py             # -> models/audio_agent_lc.pth     (selected on detector_val)
+python train_audio_lc.py             # see audio_v2_results.md for the --augment v2 runs (production: aug s1)
 python extract_fusion_features_lc_v3.py   # -> cache/fusion_features_lc_v4.json (out-of-sample, fusion_train/val)
 python train_ppo_v3.py --seed 2 --epochs 300 --out ../models/ppo_fusion_policy_v4.pth
 ```

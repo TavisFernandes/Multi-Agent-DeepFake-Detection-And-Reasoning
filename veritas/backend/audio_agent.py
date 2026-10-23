@@ -46,10 +46,12 @@ logger = logging.getLogger(__name__)
 # Paths & device
 # ---------------------------------------------------------------------------
 _HERE = Path(__file__).resolve().parent
+# Default: augmented v2 (training/audio_v2_results.md); rollback: VERITAS_AUDIO_CHECKPOINT=audio_agent_lc.pth
+_CHECKPOINT_NAME = os.environ.get("VERITAS_AUDIO_CHECKPOINT", "audio_agent_lc_v2_aug_s1.pth")
 _CANDIDATE_PATHS = [
-    _HERE / "models" / "audio_agent_lc.pth",
-    _HERE / ".." / "backend" / "models" / "audio_agent_lc.pth",
-    _HERE / ".." / ".." / "backend" / "models" / "audio_agent_lc.pth",
+    _HERE / "models" / _CHECKPOINT_NAME,
+    _HERE / ".." / "backend" / "models" / _CHECKPOINT_NAME,
+    _HERE / ".." / ".." / "backend" / "models" / _CHECKPOINT_NAME,
 ]
 _CHECKPOINT_PATH = next(
     (p for p in _CANDIDATE_PATHS if p.resolve().exists()), _CANDIDATE_PATHS[0]

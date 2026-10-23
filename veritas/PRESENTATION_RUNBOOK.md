@@ -56,11 +56,18 @@ Before launching the services, verify the required tools are present:
 
 ### 2.4 Verify Trained Checkpoints
 Check that the files the backend loads are in `veritas/backend/models/`:
-* `spatial_agent_lc.pth` (~16.8 MB)
+* `spatial_agent_lc_v2_aug_s0.pth` (~16.8 MB) — spatial default since 2026-10-24 (`backend/training/spatial_v2_results.md`)
 * `temporal_agent_lc.pth` (~126.6 MB)
-* `audio_agent_lc.pth` (~15.6 MB)
+* `audio_agent_lc_v2_aug_s1.pth` (~15.6 MB) — audio default since 2026-10-24 (`backend/training/audio_v2_results.md`)
 * `face_detection_yunet_2023mar.onnx` (~0.2 MB)
 * `ppo_fusion_policy_v4.pth` (only used when `VERITAS_FUSION_MODE=ppo`)
+
+The previous detectors (`spatial_agent_lc.pth`, `audio_agent_lc.pth`) are kept for rollback. To run with them, set
+these before starting the backend:
+```powershell
+$env:VERITAS_SPATIAL_CHECKPOINT = "spatial_agent_lc.pth"
+$env:VERITAS_AUDIO_CHECKPOINT   = "audio_agent_lc.pth"
+```
 
 ---
 
@@ -102,7 +109,8 @@ Verify both tiers are communicating before beginning your presentation:
 ```powershell
 py -3.10 -c "import urllib.request; print(urllib.request.urlopen('http://localhost:8000/healthz').read().decode())"
 ```
-* **Expected Response**: `{"status":"ok"}`
+* **Expected Response**: `{"status":"ok","models":{"spatial":"spatial_agent_lc_v2_aug_s0.pth","temporal":"temporal_agent_lc.pth","audio":"audio_agent_lc_v2_aug_s1.pth"}}`
+* A `null` model means that detector failed to load; check the backend log (`Detector checkpoint: ...` lines).
 
 ### 4.2 Browser Access
 Open Google Chrome or Microsoft Edge and navigate to:
