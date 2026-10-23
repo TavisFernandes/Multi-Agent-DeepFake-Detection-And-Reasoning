@@ -33,6 +33,9 @@ from torch.amp import GradScaler, autocast
 from torch.utils.data import DataLoader, Dataset
 from torchvision.models.video import r3d_18, R3D_18_Weights
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import wav_cache  # noqa: E402  (file_sha256 / cache_key shared with the WAV cache)
+
 try:
     from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
 except ImportError:
@@ -64,7 +67,9 @@ CATEGORY_LABELS = {
 }
 
 
-TEMPORAL_CACHE_DIR = Path(r"D:\VERITAS_TRAINING\temporal_cache")
+# v2: keyed by dataset-relative path with a validated sidecar. The old `{identity}_{stem}.npy` cache
+# (D:\VERITAS_TRAINING\temporal_cache) let FakeVideo-FakeAudio/-RealAudio namesakes share frames; kept for audit.
+TEMPORAL_CACHE_DIR = Path(r"D:\VERITAS_TRAINING\temporal_cache_v2")
 TEMPORAL_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 
@@ -105,23 +110,28 @@ def extract_raw_16_frames(video_path: str) -> Optional[np.ndarray]:
         cap.release()
 
 
-def get_cached_or_sample_temporal(video_path: str) -> Optional[np.ndarray]:
-    """Retrieve 16 uint8 frames from disk cache or extract and cache."""
-    stem = Path(video_path).stem
-    parent_id = Path(video_path).parent.name
-    cache_file = TEMPORAL_CACHE_DIR / f"{parent_id}_{stem}.npy"
-    if cache_file.exists():
-        try:
+def get_cached_or_sample_temporal(video_path: str, rel_path: str) -> Optional[np.ndarray]:
+    """16 uint8 frames for this exact source file; the cache entry is reused only if its sidecar matches."""
+    sampling = {"num_frames": NUM_FRAMES, "target_fps": TARGET_FPS, "frame_size": FRAME_SIZE, "window": "centre"}
+    source_sha = wav_cache.file_sha256(video_path)
+    cache_file = TEMPORAL_CACHE_DIR / f"{wav_cache.cache_key(rel_path)}.npy"
+    sidecar = cache_file.with_suffix(".json")
+    try:
+        prov = json.loads(sidecar.read_text(encoding="utf-8"))
+        if (prov["rel_path"] == rel_path and prov["source_sha256"] == source_sha and prov["sampling"] == sampling
+                and prov["npy_sha256"] == wav_cache.file_sha256(cache_file)):
             return np.load(str(cache_file))
-        except Exception:
-            pass
+    except (OSError, ValueError, KeyError):
+        pass  # missing or stale: re-extract
 
     raw = extract_raw_16_frames(video_path)
     if raw is not None:
-        try:
-            np.save(str(cache_file), raw)
-        except Exception:
-            pass
+        TEMPORAL_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        tmp = cache_file.with_name(cache_file.stem + ".partial.npy")
+        np.save(str(tmp), raw)
+        os.replace(tmp, cache_file)
+        sidecar.write_text(json.dumps({"rel_path": rel_path, "source_sha256": source_sha, "sampling": sampling,
+                                       "npy_sha256": wav_cache.file_sha256(cache_file)}), encoding="utf-8")
     return raw
 
 
@@ -138,7 +148,7 @@ class TemporalDataset(Dataset):
         path = item["full_path"]
         label = CATEGORY_LABELS[item["type"]]
 
-        raw_frames = get_cached_or_sample_temporal(path)
+        raw_frames = get_cached_or_sample_temporal(path, item["rel_path"])
         if raw_frames is None:
             tensor = torch.zeros(3, NUM_FRAMES, FRAME_SIZE, FRAME_SIZE, dtype=torch.float32)
             valid = 0
