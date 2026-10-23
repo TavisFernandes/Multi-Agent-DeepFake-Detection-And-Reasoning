@@ -116,12 +116,14 @@ if os.path.exists(test_wav):
     s, t, a, c = audio_agents
     record("Audio input -> Spatial is not_applicable", s.get("status") == "not_applicable" and s.get("is_fake") is None)
     record("Audio input -> Temporal is not_applicable", t.get("status") == "not_applicable" and t.get("is_fake") is None)
-    record("Audio input -> Audio ran and has_audio=True", a.get("has_audio") is True and a.get("status") == "trained")
+    # test_audio.wav is a 1 kHz tone: the audio agent runs but refuses to score non-speech.
+    record("Audio input -> Audio ran and has_audio=True", a.get("has_audio") is True and a.get("status") == "unavailable")
     record("Audio input -> Context is not_applicable", c.get("status") == "not_applicable" and c.get("is_fake") is None)
     
     score, verdict, contributing, unavailable = _compute_verdict(audio_agents)
-    record("Audio input -> Only Audio Analysis contributes", contributing == ["Audio Analysis"])
-    record("Audio input -> Spatial, Temporal, Context unavailable", set(unavailable) == {"Spatial Analysis", "Temporal Analysis", "Context Verification"})
+    record("Audio input (no speech) -> nothing contributes", contributing == [])
+    record("Audio input (no speech) -> every agent unavailable", set(unavailable) == {"Spatial Analysis", "Temporal Analysis", "Audio Analysis", "Context Verification"})
+    record("Audio input (no speech) -> never AUTHENTIC", verdict != "AUTHENTIC")
     record("Audio input -> Score equals Audio confidence", round(score, 4) == round(a.get("confidence", 0.0), 4))
 
 # Test 2.2: Video without audio routing

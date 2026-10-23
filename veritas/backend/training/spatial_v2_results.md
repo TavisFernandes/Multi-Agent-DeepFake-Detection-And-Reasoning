@@ -104,11 +104,14 @@ visual-only fakes after heavy compression, where temporal is the weaker detector
   previous model called most re-encoded real faces fake, so the robust model is the safer demo default.
 - **Temporal → unchanged**; it is the next model to retrain.
 - **Fusion → corrected_fixed unchanged.** No fusion or uncertainty change was made. Any rule tuned on these counts
-  would be one more selection on fusion_val. PPO v4 was trained on the previous detectors' scores and has not
-  been re-validated with v2.
+  would be one more selection on fusion_val. PPO v4 was trained on the previous detectors' scores, so `ppo` mode
+  now falls back to corrected_fixed (with `fusion_fallback_reason`) unless the loaded detectors match the ones
+  recorded in the PPO checkpoint.
 
 ## Known limitations
 - Development evidence only (see top). The degradations are synthetic and cover FakeAVCeleb generators only.
-- The audio detector has no speech check. A pure 1 kHz tone (`test_audio.wav`) scores 0.99 fake (0.61 with the
-  previous model, also DEEPFAKE).
+- Audio is scored only when the track looks like speech. Silent tracks (< -60 dBFS) and pure tones (> 99.5% of the
+  energy in 6 FFT bins) return `unavailable`, never AUTHENTIC. These thresholds flag none of the 22,215 dataset WAVs
+  (dataset range: -49 to -7 dBFS, tonal share up to 0.954). Before this guard, the 1 kHz `test_audio.wav` scored
+  0.99 fake. Other non-speech sounds (music, noise) are still scored.
 - Crop-margin augmentation only zooms in. Zooming out would need background the training clips do not have.

@@ -434,13 +434,17 @@ def _compute_verdict(
 
     if mode == "ppo":
         policy = get_fusion_policy()
-        if policy.is_loaded:
+        loaded = _loaded_models()
+        if policy.is_loaded and policy.trained_on in (None, loaded):
             overall, verdict, contributing, unavailable, details = policy.fuse_agents(agents, media_type)
             details["method"] = "ppo"
         else:
-            logger.warning("PPO policy not loaded (%s); using corrected fixed-weight fusion.", policy.load_error)
+            # A policy fed scores from detectors it was not trained on has not been validated.
+            reason = (f"PPO policy not loaded ({policy.load_error})" if not policy.is_loaded else
+                      f"PPO policy was trained on detectors {policy.trained_on}, but {loaded} are loaded")
+            logger.warning("%s; using corrected fixed-weight fusion.", reason)
             overall, verdict, contributing, unavailable, details = compute_verdict_corrected_fixed(agents, media_type)
-            details["fusion_fallback_reason"] = f"PPO policy not loaded ({policy.load_error}); corrected_fixed was used."
+            details["fusion_fallback_reason"] = f"{reason}; corrected_fixed was used."
     elif mode == "legacy":
         overall, verdict, contributing, unavailable, details = compute_verdict_legacy(agents)
     elif mode == "corrected_fixed":
@@ -764,7 +768,7 @@ if __name__ == "__main__":
 
     uvicorn.run(
         "main:app",
-        host="0.0.0.0",
+        host=os.environ.get("VERITAS_HOST", "127.0.0.1"),  # the API has no auth; set 0.0.0.0 only on a trusted network
         port=8000,
         reload=False,
         log_level="info",

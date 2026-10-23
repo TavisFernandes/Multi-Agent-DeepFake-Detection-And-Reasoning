@@ -332,6 +332,28 @@ def _wav_to_tensor(wav_path: str) -> torch.Tensor:
     return tensor.to(_DEVICE)
 
 
+# On the 3 s crop the model sees, over 6,150 dataset WAVs: level -49.2 to -7.4 dBFS; energy share of the 6 strongest
+# FFT bins 0.009-0.954 (the most tonal clips are all fake audio). A pure tone scores ~1.0.
+_SILENCE_DBFS = -60.0
+_TONE_FRACTION = 0.995
+
+
+def _no_speech_reason(wav_path: str) -> Optional[str]:
+    """Why the track cannot be speech (silent or a pure tone), or None. The model was trained on speech only."""
+    with wave.open(wav_path, "rb") as wf:
+        x = np.frombuffer(wf.readframes(wf.getnframes()), dtype=np.int16).astype(np.float32) / 32768.0
+    if x.size == 0:
+        return "Audio track is empty"
+    start = max(0, (x.size - _CLIP_SAMPLES) // 2)
+    x = np.resize(x[start:start + _CLIP_SAMPLES], _CLIP_SAMPLES)  # same centre crop / wrap-pad as the model input
+    if 20 * np.log10(np.sqrt(np.mean(x ** 2)) + 1e-12) < _SILENCE_DBFS:
+        return "Audio track is silent"
+    power = np.abs(np.fft.rfft(x * np.hanning(x.size))) ** 2
+    if np.sort(power)[-6:].sum() / power.sum() > _TONE_FRACTION:
+        return "Audio track is a pure tone, not speech"
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Finding strings
 # ---------------------------------------------------------------------------
@@ -447,6 +469,21 @@ def run_audio_agent(media_path: str) -> dict:
             }
 
         tmp_wav_path = wav_path
+
+        no_speech = _no_speech_reason(wav_path)
+        if no_speech:
+            return {
+                "agent":       "Audio Analysis",
+                "status":      "unavailable",
+                "has_audio":   probe["has_audio"],
+                "codec":       probe["codec"],
+                "sample_rate": probe["sample_rate"],
+                "channels":    probe["channels"],
+                "duration":    round(probe["duration"], 3),
+                "is_fake":     None,
+                "confidence":  0,
+                "finding":     f"{no_speech} — the audio model only assesses speech, so no score was produced.",
+            }
 
         tensor = _wav_to_tensor(wav_path)
 

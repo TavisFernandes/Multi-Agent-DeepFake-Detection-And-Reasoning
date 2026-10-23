@@ -16,7 +16,7 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    host: '0.0.0.0',
+    host: '127.0.0.1', // the proxied API has no auth; `npm run dev -- --host` exposes it on a trusted LAN
     proxy: {
       // FastAPI's routes have no /api prefix (e.g. /api/analyse/stream → /analyse/stream).
       '/api': {

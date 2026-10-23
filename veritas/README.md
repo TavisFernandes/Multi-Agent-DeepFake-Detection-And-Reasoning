@@ -25,7 +25,7 @@ pip install -r requirements.txt
 python main.py
 ```
 
-→ Runs on **http://localhost:8000**
+→ Runs on **http://127.0.0.1:8000**
 
 > First run will take longer as PyTorch downloads are heavy. Subsequent runs are instant.
 
@@ -37,7 +37,7 @@ npm install
 npm run dev
 ```
 
-→ Open **http://localhost:5173** in your browser
+→ Open **http://127.0.0.1:5173** in your browser
 
 ---
 
@@ -82,7 +82,8 @@ The older `spatial_agent.pth`, `temporal_agent_checkpoint.pth`, `audio_agent_che
 `ppo_fusion_policy{,_v2,_v3}.pth` are kept for reference and are not loaded. The previous production detectors
 `spatial_agent_lc.pth` and `audio_agent_lc.pth` are kept for rollback: set `VERITAS_SPATIAL_CHECKPOINT` /
 `VERITAS_AUDIO_CHECKPOINT` to those file names. `GET /healthz` reports the checkpoint each detector loaded.
-PPO v4 was trained on the previous detectors' scores and has not been re-validated with the v2 detectors.
+PPO v4 was trained on the previous detectors' scores, so `ppo` mode falls back to `corrected_fixed` (and says why)
+unless the detectors recorded in its checkpoint are the ones loaded.
 
 If a checkpoint is missing, that agent reports itself unavailable and is left out of fusion; no score is invented.
 

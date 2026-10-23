@@ -637,6 +637,7 @@ class PPOFusionPolicy:
         self.normalizer = FeatureNormalizer(STATE_DIM)
         self.is_loaded = False
         self.checkpoint_metadata: Dict[str, Any] = {}
+        self.trained_on: Optional[Dict[str, str]] = None
         self.checkpoint_path: Optional[Path] = None
         self.load_error: Optional[str] = None
 
@@ -674,6 +675,8 @@ class PPOFusionPolicy:
             logger.warning("Normalizer missing from checkpoint; using identity normalizer.")
 
         self.checkpoint_metadata = checkpoint.get("metadata", {})
+        # Detector checkpoints whose scores the policy was trained on (None if the checkpoint does not record them).
+        self.trained_on = checkpoint.get("training_metadata", {}).get("detector_checkpoints")
         self.checkpoint_path = path
         self.network.eval()
         self.is_loaded = True

@@ -84,8 +84,10 @@ py -3.10 main.py
 * **Success Output**:
   ```
   INFO:     Application startup complete.
-  INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+  INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
   ```
+* Both servers listen on `127.0.0.1` only, because the API has no authentication. To demo from another device on a
+  trusted network, start them with `$env:VERITAS_HOST = "0.0.0.0"` (backend) and `npm run dev -- --host` (frontend).
 
 ### Terminal 2 — Frontend (React + Vite)
 ```powershell
@@ -96,7 +98,7 @@ npm run dev
 * **Success Output**:
   ```
     VITE v7.x ready in ... ms
-    ➜  Local:   http://localhost:5173/
+    ➜  Local:   http://127.0.0.1:5173/
   ```
 
 ---
@@ -107,7 +109,7 @@ Verify both tiers are communicating before beginning your presentation:
 
 ### 4.1 Backend Health Check
 ```powershell
-py -3.10 -c "import urllib.request; print(urllib.request.urlopen('http://localhost:8000/healthz').read().decode())"
+py -3.10 -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/healthz').read().decode())"
 ```
 * **Expected Response**: `{"status":"ok","models":{"spatial":"spatial_agent_lc_v2_aug_s0.pth","temporal":"temporal_agent_lc.pth","audio":"audio_agent_lc_v2_aug_s1.pth"}}`
 * A `null` model means that detector failed to load; check the backend log (`Detector checkpoint: ...` lines).
@@ -115,7 +117,7 @@ py -3.10 -c "import urllib.request; print(urllib.request.urlopen('http://localho
 ### 4.2 Browser Access
 Open Google Chrome or Microsoft Edge and navigate to:
 ```
-http://localhost:5173/console
+http://127.0.0.1:5173/console
 ```
 
 ---
@@ -125,7 +127,7 @@ http://localhost:5173/console
 Follow these steps for a clean, glitch-free presentation:
 
 1. **Open the Console**:
-   * Navigate to `http://localhost:5173/console`.
+   * Navigate to `http://127.0.0.1:5173/console`.
    * Observe the automated boot sequence:
      - Spatial Analysis Module loaded (`EfficientNet-B0`)
      - Temporal Analysis Module loaded (`R3D-18`)
@@ -137,7 +139,10 @@ Follow these steps for a clean, glitch-free presentation:
 
 2. **Select Modality & Upload Media**:
    * For video demonstrations: Click the **Video** tab in the sidebar.
-   * Click the drop zone or drag-and-drop a sample file (e.g. `veritas/backend/00025_fake.mp4`).
+   * Click the drop zone or drag-and-drop a clip with a visible face and speech, e.g. a FakeAVCeleb clip from
+     `D:\VERITAS_TRAINING\data\FakeAVCeleb_v1.2\FakeAVCeleb_v1.2\` (any `RealVideo-RealAudio` / `FakeVideo-FakeAudio` file).
+     The repo samples `00025_fake.mp4` and `test_audio.wav` have no face and a 1 kHz test tone, so they correctly show
+     `UNVERIFIED` (the audio model only scores speech).
    * Verify the file name and size appear with the green checkmark ("Content loaded").
 
 3. **Trigger Multi-Agent Analysis**:

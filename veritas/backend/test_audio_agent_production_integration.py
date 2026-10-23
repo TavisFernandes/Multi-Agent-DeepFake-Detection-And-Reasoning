@@ -6,7 +6,7 @@ Comprehensive integration test suite for the VERITAS Audio Agent:
 2. Parameter count and architectural head verification.
 3. Decision threshold loading and calibrated value verification (0.50).
 4. Preprocessing parity between training pipeline and production agent.
-5. End-to-end execution on authentic audio (test_audio.wav, real video).
+5. End-to-end execution on authentic speech (a real dataset clip) and the no-speech guard (test_audio.wav, a tone).
 6. End-to-end execution on deepfake audio (fake video).
 7. Standalone model vs Production agent output numerical parity.
 8. CPU inference verification and GPU/CPU cross-validation.
@@ -60,7 +60,7 @@ print("=" * 70)
 # Test Group 1: Safe Checkpoint Loading & State Dict Integrity
 # ---------------------------------------------------------------------------
 print("\n[Group 1] Safe Production Checkpoint Loading & Architecture")
-ckpt_path = _HERE / "models" / "audio_agent_checkpoint.pth"
+ckpt_path = audio_agent._CHECKPOINT_PATH.resolve()  # the checkpoint production loads
 check(ckpt_path.exists(), f"Production checkpoint exists at {ckpt_path}")
 
 # Load using weights_only=True
@@ -95,8 +95,10 @@ check(audio_agent._DECISION_THRESHOLD == 0.50, f"audio_agent._DECISION_THRESHOLD
 # Test Group 3: Standalone vs Production Preprocessing & Output Parity
 # ---------------------------------------------------------------------------
 print("\n[Group 3] Preprocessing and Forward Output Parity")
-test_wav = _HERE / "test_audio.wav"
-check(test_wav.exists(), f"Reference audio fixture exists: {test_wav}")
+# Speech from a real dataset clip: test_audio.wav is a pure tone, which the agent refuses to score (Group 6).
+real_video = Path(r"D:\VERITAS_TRAINING\data\FakeAVCeleb_v1.2\FakeAVCeleb_v1.2\RealVideo-RealAudio\African\men\id00076\00109.mp4")
+check(real_video.exists(), f"Real speech source exists: {real_video}")
+test_wav = Path(audio_agent._extract_wav(str(real_video)))
 
 # Preprocessing parity
 prod_tensor = audio_agent._wav_to_tensor(str(test_wav)).cpu()
@@ -129,14 +131,13 @@ check(forward_diff <= 5e-5, f"Unrounded vs rounded difference {forward_diff:.2e}
 # ---------------------------------------------------------------------------
 print("\n[Group 4] End-to-End Media Smoke Tests & Semantics")
 
-# 1. Reference authentic WAV
-check(res_prod["status"] in ("ok", "trained"), f"test_audio.wav status == 'trained' (got {res_prod['status']})")
-check(res_prod["is_fake"] is False, f"test_audio.wav correctly classified as REAL (is_fake={res_prod['is_fake']})")
-check(res_prod["fake_probability"] < 0.50, f"test_audio.wav fake_prob < 0.50 (got {res_prod['fake_probability']:.6f})")
+# 1. Reference authentic speech WAV
+check(res_prod["status"] in ("ok", "trained"), f"Real speech WAV status == 'trained' (got {res_prod['status']})")
+check(res_prod["is_fake"] is False, f"Real speech WAV correctly classified as REAL (is_fake={res_prod['is_fake']})")
+check(res_prod["fake_probability"] < 0.50, f"Real speech WAV fake_prob < 0.50 (got {res_prod['fake_probability']:.6f})")
 check(res_prod["confidence"] == res_prod["fake_probability"], f"Confidence matches fake_prob score for fusion ({res_prod['confidence']})")
 
 # 2. Real video from dataset
-real_video = Path(r"D:\VERITAS_TRAINING\data\FakeAVCeleb_v1.2\FakeAVCeleb_v1.2\RealVideo-RealAudio\African\men\id00076\00109.mp4")
 if real_video.exists():
     res_real = audio_agent.run_audio_agent(str(real_video))
     check(res_real["status"] in ("ok", "trained"), f"Real video {real_video.name} status == 'trained'")
@@ -167,7 +168,7 @@ audio_agent._model.to(torch.device("cpu"))
 
 res_cpu = audio_agent.run_audio_agent(str(test_wav))
 check(res_cpu["status"] in ("ok", "trained"), "CPU inference succeeded with status == 'trained'")
-check(res_cpu["is_fake"] is False, "CPU inference correctly classified test_audio.wav as REAL")
+check(res_cpu["is_fake"] is False, "CPU inference correctly classified the real speech WAV as REAL")
 cpu_gpu_diff = abs(res_cpu["fake_probability"] - prod_prob)
 check(cpu_gpu_diff < 1e-4, f"CPU vs GPU probability diff within numerical tolerance: {cpu_gpu_diff:.2e}")
 
@@ -195,7 +196,13 @@ if no_audio_file.exists():
     check(res_no_audio["is_fake"] is None, "No-audio video returns is_fake=None")
     check(res_no_audio["confidence"] == 0, "No-audio video returns confidence=0")
 
-# 3. Silent/Empty audio handling
+# 3. Pure tone: not speech, so no score (never AUTHENTIC)
+res_tone = audio_agent.run_audio_agent(str(_HERE / "test_audio.wav"))
+check(res_tone["status"] == "unavailable" and res_tone["is_fake"] is None and res_tone["confidence"] == 0,
+      f"1 kHz tone returns status='unavailable', is_fake=None (got {res_tone['status']}, {res_tone['is_fake']})")
+os.remove(test_wav)
+
+# 4. Silent/Empty audio handling
 with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tf:
     empty_path = tf.name
 try:

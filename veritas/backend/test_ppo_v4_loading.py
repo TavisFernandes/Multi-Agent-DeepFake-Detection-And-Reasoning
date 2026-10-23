@@ -24,11 +24,28 @@ def test_default_policy_loads_the_v4_file():
         assert torch.equal(tensor.cpu(), expected[name]), name
 
 
-def test_ppo_mode_uses_the_v4_policy(monkeypatch):
+def test_ppo_mode_uses_the_v4_policy_with_its_training_detectors(monkeypatch):
+    import main
     monkeypatch.setattr(fusion_policy, "_GLOBAL_POLICY", None)
+    policy = fusion_policy.get_fusion_policy()
+    assert policy.trained_on == {"spatial": "spatial_agent_lc.pth", "temporal": "temporal_agent_lc.pth",
+                                 "audio": "audio_agent_lc.pth"}
+    monkeypatch.setattr(main, "_loaded_models", lambda: dict(policy.trained_on))
     *_, details = _compute_verdict(AGENTS, "video", return_details=True, mode_override="ppo")
     assert details["method"] == "ppo"
-    assert fusion_policy.get_fusion_policy().checkpoint_path == V4.resolve()
+    assert policy.checkpoint_path == V4.resolve()
+
+
+def test_ppo_mode_falls_back_when_other_detectors_are_loaded(monkeypatch):
+    import main
+    from main import _decision_payload
+    monkeypatch.setattr(fusion_policy, "_GLOBAL_POLICY", None)
+    monkeypatch.setattr(main, "_loaded_models", lambda: {"spatial": "spatial_agent_lc_v2_aug_s0.pth",
+                                                         "temporal": "temporal_agent_lc.pth",
+                                                         "audio": "audio_agent_lc_v2_aug_s1.pth"})
+    *_, details = _compute_verdict(AGENTS, "video", return_details=True, mode_override="ppo")
+    assert details["method"] == "corrected_fixed"
+    assert "PPO policy was trained on detectors" in _decision_payload(details)["fusion_fallback_reason"]
 
 
 def test_missing_v4_is_an_error_not_a_silent_fallback_to_v2(monkeypatch, tmp_path):
