@@ -3,8 +3,8 @@ train_audio_lc.py
 =================
 Leakage-controlled training pipeline for VERITAS Audio Synthesis Detector.
 Trains an EfficientNet-B0 audio deepfake detector using ONLY clips from
-the leakage-controlled `detector_train` split (270 identities, 5,056 clips).
-Evaluates, sweeps decision thresholds, and selects checkpoints on `detector_val` (30 identities, 108 clips).
+the leakage-controlled `detector_train` split (manifest v3: 270 identities, 5,034 clips).
+Evaluates, sweeps decision thresholds, and selects checkpoints on `detector_val` (30 identities, 106 clips).
 
 Target:
   - RealVideo-RealAudio: 0 (REAL)
@@ -12,8 +12,8 @@ Target:
   - FakeVideo-RealAudio: 0 (REAL)
   - FakeVideo-FakeAudio: 1 (FAKE)
 
-Checkpoint saved to:
-  `veritas/backend/models/audio_agent_lc.pth`
+Checkpoint written to --out (never overwrites; production loads:
+  `veritas/backend/models/audio_agent_lc.pth`). --augment adds codec/gain/noise/window augmentation.
 """
 
 import json
@@ -49,7 +49,6 @@ logger = logging.getLogger("train_audio_lc")
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 MANIFEST_PATH = BACKEND_DIR / "training" / "leakage_controlled_split_manifest_v3.json"  # v3: v2 minus 11 repeated rows (dataset_audit/manifest_v3_exclusions.json)
-CHECKPOINT_OUT = BACKEND_DIR / "models" / "audio_agent_lc.pth"
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import wav_cache  # noqa: E402
 
@@ -94,30 +93,32 @@ def wav_to_mel_tensor(wav_path: str) -> Optional[torch.Tensor]:
             frames = wf.readframes(n_frames)
 
         audio_np = np.frombuffer(frames, dtype=np.int16).astype(np.float32) / 32768.0
-        if len(audio_np) == 0:
-            return None
-
-        # Pad or center crop to 48,000 samples
-        if len(audio_np) < TARGET_SAMPLES:
-            audio_np = np.pad(audio_np, (0, TARGET_SAMPLES - len(audio_np)), mode="wrap")
-        elif len(audio_np) > TARGET_SAMPLES:
-            start = (len(audio_np) - TARGET_SAMPLES) // 2
-            audio_np = audio_np[start : start + TARGET_SAMPLES]
-
-        waveform = torch.from_numpy(audio_np).unsqueeze(0)  # (1, 48000)
-        mel = mel_transform(waveform)
-        mel_db = amp_to_db(mel)
-
-        mel_4d = mel_db.unsqueeze(0)  # (1, 1, 128, T)
-        mel_resized = F.interpolate(
-            mel_4d, size=(224, 224), mode="bilinear", align_corners=False
-        )  # (1, 1, 224, 224)
-        mel_2d = mel_resized.squeeze(0)  # (1, 224, 224)
-        mel_norm = (mel_2d - 0.5) / 0.5  # (1, 224, 224)
-        mel_3ch = mel_norm.repeat(3, 1, 1)  # (3, 224, 224)
-        return mel_3ch
+        return mel_from_array(audio_np) if len(audio_np) else None
     except Exception:
         return None
+
+
+def mel_from_array(audio_np: np.ndarray, start: Optional[int] = None) -> torch.Tensor:
+    """float32 16 kHz mono -> (3, 224, 224); `start` picks the 3 s window (default: centre, as inference)."""
+    # Pad or center crop to 48,000 samples
+    if len(audio_np) < TARGET_SAMPLES:
+        audio_np = np.pad(audio_np, (0, TARGET_SAMPLES - len(audio_np)), mode="wrap")
+    elif len(audio_np) > TARGET_SAMPLES:
+        if start is None:
+            start = (len(audio_np) - TARGET_SAMPLES) // 2
+        audio_np = audio_np[start : start + TARGET_SAMPLES]
+
+    waveform = torch.from_numpy(np.ascontiguousarray(audio_np)).unsqueeze(0)  # (1, 48000)
+    mel = mel_transform(waveform)
+    mel_db = amp_to_db(mel)
+
+    mel_4d = mel_db.unsqueeze(0)  # (1, 1, 128, T)
+    mel_resized = F.interpolate(
+        mel_4d, size=(224, 224), mode="bilinear", align_corners=False
+    )  # (1, 1, 224, 224)
+    mel_2d = mel_resized.squeeze(0)  # (1, 224, 224)
+    mel_norm = (mel_2d - 0.5) / 0.5  # (1, 224, 224)
+    return mel_norm.repeat(3, 1, 1)  # (3, 224, 224)
 
 
 class AudioDataset(Dataset):
@@ -152,6 +153,49 @@ class AudioDataset(Dataset):
         return ret_tensor, label, path, valid
 
 
+AUGMENT = {"p_variant": 0.5, "variants": sorted(wav_cache.VARIANTS), "random_window": True,
+           "p_gain": 0.5, "gain_db": [-6, 6], "p_noise": 0.3, "noise_snr_db": [15, 40]}
+
+
+def _read_wav(path: str) -> np.ndarray:
+    with wave.open(path, "rb") as wf:
+        return np.frombuffer(wf.readframes(wf.getnframes()), dtype=np.int16).astype(np.float32) / 32768.0
+
+
+class AugmentedAudioDataset(AudioDataset):
+    """Each draw: original or a codec/resample decode (validated wav_cache variants), random 3 s window,
+    random gain, optional white noise. Labels are untouched."""
+
+    def __init__(self, clip_list: List[Dict], seed: int):
+        super().__init__(clip_list)
+        self.rng = np.random.default_rng(seed)  # num_workers=0, so one generator is enough
+
+    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, int, str, int]:
+        item, r = self.clip_list[idx], self.rng
+        label = CATEGORY_AUDIO_LABELS[item["type"]]
+        variant = r.choice(AUGMENT["variants"]) if r.random() < AUGMENT["p_variant"] else None
+        got = wav_cache.get_wav(item["full_path"], item["rel_path"], variant=variant)
+        x = _read_wav(got[0]) if got else np.zeros(0, np.float32)
+        if len(x) == 0:
+            return torch.zeros(3, 224, 224), label, item["full_path"], 0
+        if r.random() < AUGMENT["p_gain"]:
+            x = np.clip(x * 10 ** (r.uniform(*AUGMENT["gain_db"]) / 20), -1, 1)
+        if r.random() < AUGMENT["p_noise"]:
+            snr = r.uniform(*AUGMENT["noise_snr_db"])
+            x = np.clip(x + r.standard_normal(len(x)).astype(np.float32) * np.sqrt(np.mean(x ** 2) / 10 ** (snr / 10)), -1, 1)
+        start = int(r.integers(0, len(x) - TARGET_SAMPLES + 1)) if len(x) > TARGET_SAMPLES else None
+        return mel_from_array(x.astype(np.float32), start), label, item["full_path"], 1
+
+
+def warm_wav_cache(clips: List[Dict], variants: List[Optional[str]]) -> None:
+    """Extract/validate every (clip, variant) WAV up front, in parallel (ffmpeg dominates)."""
+    from concurrent.futures import ThreadPoolExecutor
+    jobs = [(c, v) for c in clips for v in variants]
+    with ThreadPoolExecutor(8) as ex:
+        missing = sum(r is None for r in ex.map(lambda j: wav_cache.get_wav(j[0]["full_path"], j[0]["rel_path"], variant=j[1]), jobs))
+    logger.info("WAV cache warm: %d (clip, variant) pairs, %d without audio", len(jobs), missing)
+
+
 def collate_audio_fn(batch):
     tensors, labels, paths, valids = zip(*batch)
     valid_indices = [i for i, v in enumerate(valids) if v == 1]
@@ -171,6 +215,19 @@ def build_model() -> nn.Module:
 
 
 def main():
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--out", type=Path, required=True, help="new checkpoint path; refuses to overwrite")
+    ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--epochs", type=int, default=5)
+    ap.add_argument("--augment", action="store_true", help="codec/resample, gain, noise, random window")
+    args = ap.parse_args()
+    if args.out.exists():
+        raise SystemExit(f"{args.out} exists; choose a new name (existing checkpoints are kept)")
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+
     logger.info("=" * 70)
     logger.info("VERITAS AUDIO DETECTOR LEAKAGE-CONTROLLED TRAINING")
     logger.info("=" * 70)
@@ -202,8 +259,9 @@ def main():
     pos_weight = torch.tensor([float(n_real) / max(n_fake, 1)], dtype=torch.float32).to(device)
     logger.info("Audio Class Distribution: Real=%d, Fake=%d | pos_weight=%.4f", n_real, n_fake, pos_weight.item())
 
-    train_dataset = AudioDataset(train_clips)
-    val_dataset = AudioDataset(val_clips)
+    warm_wav_cache(train_clips + val_clips, [None, *(AUGMENT["variants"] if args.augment else [])])
+    train_dataset = AugmentedAudioDataset(train_clips, args.seed) if args.augment else AudioDataset(train_clips)
+    val_dataset = AudioDataset(val_clips)  # selection on clean detector_val, as before
 
     batch_size = 32 if device.type == "cuda" else 8
     num_workers = 0
@@ -228,13 +286,22 @@ def main():
     model = build_model().to(device)
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
     optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4, weight_decay=1e-4)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5)
+    epochs = args.epochs
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
     scaler = GradScaler("cuda", enabled=(device.type == "cuda"))
 
-    best_val_f1 = -1.0
+    best_val_f1, best_val_loss = -1.0, float("inf")
     best_threshold = 0.50
     best_metrics = {}
-    epochs = 5
+    provenance = {
+        "manifest": {"file": MANIFEST_PATH.name, "sha256": wav_cache.file_sha256(MANIFEST_PATH)},
+        "wav_preprocessing": wav_cache.PREPROCESSING,
+        "augment": AUGMENT if args.augment else None,
+        "seed": args.seed,
+        "epochs": epochs,
+        "train_clips": len(train_clips),
+        "val_clips": len(val_clips),
+    }
 
     training_start = time.time()
     for epoch in range(1, epochs + 1):
@@ -299,7 +366,7 @@ def main():
         for thresh in thresholds:
             preds = (val_probs >= thresh).astype(int)
             f1 = f1_score(val_targets, preds, zero_division=0)
-            if f1 > best_t_f1:
+            if f1 > best_t_f1 or (f1 == best_t_f1 and abs(thresh - 0.5) < abs(opt_thresh - 0.5)):  # ties: nearest 0.5
                 best_t_f1 = f1
                 opt_thresh = float(thresh)
 
@@ -318,8 +385,9 @@ def main():
             epoch, epochs, elapsed, train_loss, val_loss, val_acc * 100, best_t_f1, opt_thresh, val_rec * 100, val_auc
         )
 
-        if best_t_f1 > best_val_f1:
-            best_val_f1 = best_t_f1
+        # F1 saturates on 106 clips (1.0 from epoch 1), so ties go to the lower val loss.
+        if (best_t_f1, -val_loss) > (best_val_f1, -best_val_loss):
+            best_val_f1, best_val_loss = best_t_f1, val_loss
             best_threshold = opt_thresh
             best_metrics = {
                 "epoch": epoch,
@@ -341,11 +409,12 @@ def main():
                 "decision_threshold": best_threshold,
                 "metrics": best_metrics,
                 "split_provenance": "detector_train strictly disjoint (270 IDs)",
+                "training_provenance": provenance,
             }
-            CHECKPOINT_OUT.parent.mkdir(parents=True, exist_ok=True)
-            torch.save(payload, CHECKPOINT_OUT)
+            args.out.parent.mkdir(parents=True, exist_ok=True)
+            torch.save(payload, args.out)
             logger.info(">>> New best Audio checkpoint saved to %s (Val F1: %.4f, thresh: %.2f)",
-                        CHECKPOINT_OUT, best_t_f1, best_threshold)
+                        args.out, best_t_f1, best_threshold)
 
     total_time = time.time() - training_start
     logger.info("=" * 70)

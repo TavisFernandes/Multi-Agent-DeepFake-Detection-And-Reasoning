@@ -77,3 +77,15 @@ def test_stale_entries_are_re_extracted(clips, monkeypatch):
     monkeypatch.setattr(wav_cache, "PREPROCESSING", {**wav_cache.PREPROCESSING, "version": 99})
     _, prov4 = wav_cache.get_wav(str(src), REL_FAKE, cache)
     assert prov4["preprocessing"]["version"] == 99
+
+
+@pytest.mark.parametrize("variant", sorted(wav_cache.VARIANTS))
+def test_variants_are_separate_validated_entries(clips, variant):
+    root, cache = clips
+    plain, _ = wav_cache.get_wav(str(root / REL_FAKE), REL_FAKE, cache)
+    wav, prov = wav_cache.get_wav(str(root / REL_FAKE), REL_FAKE, cache, variant)
+    assert wav != plain and wav.endswith(f"__{variant}.wav") and prov["preprocessing"]["variant"] == wav_cache.VARIANTS[variant]
+    assert abs(dominant_hz(wav) - 440) < 5  # still this file's audio after the degradation
+    assert wav_cache.get_wav(str(root / REL_FAKE), REL_FAKE, cache, variant) == (wav, prov)
+    assert not list(cache.glob("*.partial*"))
+
