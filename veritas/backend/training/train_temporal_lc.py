@@ -46,7 +46,7 @@ logging.basicConfig(
 logger = logging.getLogger("train_temporal_lc")
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
-MANIFEST_PATH = BACKEND_DIR / "training" / "leakage_controlled_split_manifest.json"
+MANIFEST_PATH = BACKEND_DIR / "training" / "leakage_controlled_split_manifest_v2.json"  # v2 excludes 26 mislabelled copies (dataset_audit/manifest_v2_exclusions.json)
 CHECKPOINT_OUT = BACKEND_DIR / "models" / "temporal_agent_lc.pth"
 
 NUM_FRAMES = 16

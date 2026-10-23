@@ -34,7 +34,7 @@ from fusion_policy import (
     CATEGORIES,
 )
 
-MANIFEST_PATH = BACKEND_DIR / "training" / "leakage_controlled_split_manifest.json"
+MANIFEST_PATH = BACKEND_DIR / "training" / "leakage_controlled_split_manifest.json"  # pinned to v1: historical final_test results (see README contamination warning)
 CACHE_PATH = BACKEND_DIR / "training" / "cache" / "interim_feature_extraction.json"
 OUTPUT_REPORT_PATH = BACKEND_DIR / "training" / "leakage_controlled_test_results.json"
 

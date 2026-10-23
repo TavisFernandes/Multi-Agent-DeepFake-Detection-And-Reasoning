@@ -62,7 +62,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("reconcile_ppo_v3")
 
-MANIFEST_PATH = _HERE / "leakage_controlled_split_manifest.json"
+MANIFEST_PATH = _HERE / "leakage_controlled_split_manifest.json"  # pinned to v1: historical final_test results (see README contamination warning)
 FEATURES_CACHE_PATH = _HERE / "cache" / "fusion_features_lc_v3.json"
 PPO_V3_CKPT_PATH = _BACKEND_DIR / "models" / "ppo_fusion_policy_v3.pth"
 OLD_RESULTS_PATH = _HERE / "ppo_v3_test_results.json"

@@ -18,6 +18,26 @@ Another machine must use the same layout until these become settings.
 split can be reused but not regenerated. See `dataset_audit/duplicate_label_audit.md` for 26 known
 mislabelled clips in it.
 
+### Manifest v2 (`leakage_controlled_split_manifest_v2.json`) — use this for all model development
+
+`build_manifest_v2.py` derives v2 from v1 by excluding the 26 manipulated-labelled files that are
+byte-identical copies of an authentic RealVideo-RealAudio video. Each exclusion (path, SHA-256/MD5,
+authentic source, original label, split, reason) is in `dataset_audit/manifest_v2_exclusions.json`.
+Rerunning the script rewrites both files byte-for-byte; `python -m pytest test_manifest_v2.py` checks them.
+The excluded files stay on disk and in v1 for audit, but are **not eligible** training/validation samples;
+they are not relabelled (the authentic original is already in the same split). v1 is kept unchanged.
+The detector trainers, `extract_fusion_features_lc_v3.py` and `train_ppo_v3.py` read v2.
+
+> **final_test contamination warning.** Every historical final_test result (`leakage_controlled_test_results.json`,
+> `ppo_v3_test_results*.json`, `ppo_v3_record_level_predictions.csv`, `ppo_v3_*_report.md`/`_audit.md`,
+> `independent_evaluation_v1/`) was computed on v1, which includes one mislabelled copy, and final_test has
+> been scored repeatedly. Those numbers are kept as history only. Do not rescore final_test to report a
+> fresh result, and do not use it to select models or thresholds. The final_test evaluators stay pinned to v1.
+
+Audio calibration (Platt/isotonic) was tried and **not deployed**; see
+`calibration_experiments/audio_2026-10-23/RESULTS.md` (it also documents a WAV-cache key collision in
+`extract_fusion_features_lc_v3.py` that must be fixed before features are regenerated).
+
 Run from `veritas/backend/training/`, in order:
 
 ```bash

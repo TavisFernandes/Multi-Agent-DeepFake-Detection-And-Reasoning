@@ -63,6 +63,7 @@ logging.basicConfig(
 logger = logging.getLogger("train_ppo_v3")
 
 FEATURES_CACHE_PATH = _HERE / "cache" / "fusion_features_lc_v3.json"
+MANIFEST_PATH = _HERE / "leakage_controlled_split_manifest_v2.json"
 CHECKPOINT_OUT = _BACKEND_DIR / "models" / "ppo_fusion_policy_v3.pth"
 
 
@@ -270,6 +271,13 @@ class PPOTrainerV3:
         }
 
 
+def eligible_records(records: Dict[str, Dict[str, Any]], split: str) -> List[Dict[str, Any]]:
+    """Cache records of `split` that the versioned manifest still lists (the cache was built from v1)."""
+    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    eligible = {c["full_path"] for clist in manifest["clips"][split].values() for c in clist}
+    return [r for r in records.values() if r["split"] == split and r["full_path"] in eligible]
+
+
 def run_ppo_training(seed: int = 42, epochs: int = 20, out: Path = CHECKPOINT_OUT):
     logger.info("=" * 80)
     logger.info("VERITAS PPO v3 ADAPTIVE FUSION TRAINING")
@@ -280,8 +288,8 @@ def run_ppo_training(seed: int = 42, epochs: int = 20, out: Path = CHECKPOINT_OU
         cache = json.load(f)
 
     records = cache["records"]
-    train_records = [r for r in records.values() if r["split"] == "fusion_train"]
-    val_records = [r for r in records.values() if r["split"] == "fusion_val"]
+    train_records = eligible_records(records, "fusion_train")
+    val_records = eligible_records(records, "fusion_val")
 
     logger.info("Loaded fusion_train records: %d", len(train_records))
     logger.info("Loaded fusion_val records:   %d", len(val_records))

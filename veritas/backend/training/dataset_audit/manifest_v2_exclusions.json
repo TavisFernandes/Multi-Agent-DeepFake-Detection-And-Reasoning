@@ -1,0 +1,245 @@
+{
+ "manifest": "leakage_controlled_split_manifest_v2",
+ "derived_from": {
+  "file": "leakage_controlled_split_manifest.json",
+  "sha256": "86f84ce7948f9e0d1a11b4b90d8cccb00e2a08456abf88227c82c7f9aba932d4"
+ },
+ "dataset_root": "D:\\VERITAS_TRAINING\\data\\FakeAVCeleb_v1.2\\FakeAVCeleb_v1.2",
+ "method": "SHA-256 of every .mp4 under dataset_root whose file size collides with another; groups containing a RealVideo-RealAudio file exclude every other member listed in v1",
+ "exclusions": [
+  {
+   "rel_path": "FakeVideo-RealAudio\\African\\women\\id00220\\00027.mp4",
+   "sha256": "593efaa88dd61617464783f059f5b142df0c7c00b1749c2694414b506aeabc03",
+   "md5": "abd655ff6045b518462da57ec5835458",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\African\\women\\id00220\\00027.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "detector_train",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\African\\women\\id00460\\00005.mp4",
+   "sha256": "7d2da0a05ebb70a7a685effaefcabd8fb7efb2ff3ce9c072da3abb065ba0aeee",
+   "md5": "ced425fff47067b83c4fd0242d7d8a9e",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\African\\women\\id00460\\00005.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "detector_train",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\African\\women\\id00577\\00010.mp4",
+   "sha256": "e01054457a4e478e8d3b628fa73f61daa33e0dcaa74b4b0f7d3aa9537bafcfb0",
+   "md5": "128215c5b718ff00fa5df3f019ca6166",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\African\\women\\id00577\\00010.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "final_test",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\African\\women\\id00592\\00017.mp4",
+   "sha256": "c821d65d578c4aa51fdaa37316c69d96b9701dbd21611da9782a6e7eead5d289",
+   "md5": "56300a9a7ed2fc236fad78451e7fe76c",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\African\\women\\id00592\\00017.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "fusion_train",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\African\\women\\id00829\\00271.mp4",
+   "sha256": "86c9da771500342b5cdf7cc6f98029a4aced263d185e322dfed2981162bd5b63",
+   "md5": "669edb631e9ef53a3de3497c8377813c",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\African\\women\\id00829\\00271.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "fusion_train",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\African\\women\\id01532\\00065.mp4",
+   "sha256": "ee36cf92f895865c280956426ee44223f2cae1a79aa45b734facb58632a449e5",
+   "md5": "00542eb0368f7421744c40a947b7c149",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\African\\women\\id01532\\00065.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "detector_train",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\African\\women\\id01661\\00059.mp4",
+   "sha256": "9dd9b119318140e19de41f2ad8cd521c27515090e73ff21789d96b5ae6585fcc",
+   "md5": "982b0e75c8a27a92bb95bf06ebc82661",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\African\\women\\id01661\\00059.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "fusion_train",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\African\\women\\id01783\\00015.mp4",
+   "sha256": "869b6366dfa13b5156963ea42472e049dc1cf5c8819501be27bed8e8ba76c0ea",
+   "md5": "b357ce777d956e6e4f9965711127f83b",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\African\\women\\id01783\\00015.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "detector_train",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\African\\women\\id02617\\00028.mp4",
+   "sha256": "289a9904f7dfe79aec576588a29c679c72aca51119299168ccb736d86b83c715",
+   "md5": "655a81325a090b1c7a017cf161ea10af",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\African\\women\\id02617\\00028.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "detector_val",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id03965\\00051.mp4",
+   "sha256": "fba98aad6de0cffe9d0d55fdbeb7ba5ebef680b775297a8c6c4243b849d26ba0",
+   "md5": "07c35f24271a4115180a29e1bf9e301e",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id03965\\00051.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "detector_train",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id04789\\002121.mp4",
+   "sha256": "4071abedba522554c67be20ded7607527afa3f1101a6ca3a1593c4008a0d0118",
+   "md5": "a01d9526a8318e1cdbf9c482492acaee",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id04789\\002121.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "detector_train",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id05268\\00010.mp4",
+   "sha256": "6c018683d76bf39bfe1dfe5f0709507e945594257a2128215c8dd4babc10f4fa",
+   "md5": "0ee870f90da63cb2fab9d27726d696cf",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id05268\\00010.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "detector_train",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id05332\\00065.mp4",
+   "sha256": "885e9ca633d83987249c11c03a595162a3a2d4a99e424ddd3440ea98fa07fd5e",
+   "md5": "8b5fa4dc27c8ed5fd1f546fad10176cf",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id05332\\00065.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "fusion_val",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id05383\\00015.mp4",
+   "sha256": "cc1a8fdc039e717e2eaa628632190d2b82c7fbc86a7e94a1573e982bf56e6276",
+   "md5": "0b0bf118f03744fb257b0fd31fd76f76",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id05383\\00015.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "detector_train",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id06152\\06152.mp4",
+   "sha256": "901ba9b7679ddcc51a95fc5eb7d116172bab06826a79093f5aab4c93e1c783d4",
+   "md5": "75e3ba4ef8e5eebef4bf705ddcbd7988",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id06152\\06152.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "detector_val",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id06591\\00021.mp4",
+   "sha256": "2314eb02459d281c05c1486cc7ab6eb84dfb86db494bfa82c876006b92046241",
+   "md5": "69a0080df760bc7f5c2cdd2515da1f2e",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id06591\\00021.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "fusion_train",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id06594\\00002.mp4",
+   "sha256": "4293feb6e66bb096a551e84819e9ecc84c157112977654b0ee539cd337535901",
+   "md5": "8b3746b6bf31d7411401674df0711d0b",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id06594\\00002.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "detector_train",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id06776\\00021.mp4",
+   "sha256": "48db7c8e4b0578e4d15cc33611ee496de62050a45fd7df5ed48efed98d5296f0",
+   "md5": "cda815cbc8a50d5fa854f980a0f431d4",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id06776\\00021.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "detector_train",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id06807\\00015.mp4",
+   "sha256": "333d23815034bdeedc4d87accd6d0a566c9254c4fb2be5a7539685deb37d214f",
+   "md5": "165d29104210d577ac4653d4bfc3bc87",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id06807\\00015.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "fusion_val",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id06878\\00001.mp4",
+   "sha256": "8cd0cda4dd4e613fe7ba12e19096852a97eb1371b3e8266a1bcf689475e36a7f",
+   "md5": "da81ba145a7464438ae6b6fabd4521a8",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id06878\\00001.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "fusion_train",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id07338\\00003.mp4",
+   "sha256": "4de532cc2923baccf1fabb465382df3fddbfe6ac1af44ad7ec50bac5499e2f01",
+   "md5": "a0685bafb795584b2a16b4a5121f7b70",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id07338\\00003.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "fusion_val",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id08613\\00074.mp4",
+   "sha256": "6e479bd681b0d0c40172c329158b1bcc8874169c9fe9618c7a0269cf067d8d3a",
+   "md5": "7395a1097e67194c72c69d8df6ee228e",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id08613\\00074.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "detector_train",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id08652\\00006.mp4",
+   "sha256": "8131f7374a57faaaeed0c31e462580d4dc15d1c41f27c4304c552de808dc0f38",
+   "md5": "a3be0d74af7881188c5af7cc8ef2f495",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id08652\\00006.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "detector_train",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\women\\id07901\\00040.mp4",
+   "sha256": "db21e5d31f7d217300c32091f96dcb9cb570bade527ad8928dfefb64ef0229fb",
+   "md5": "4d6e0ee5b46328da8fc3ae7041732f6f",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\Asian (East)\\women\\id07901\\00040.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "detector_train",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\women\\id08139\\00067.mp4",
+   "sha256": "b1ff3161f1dce594c709cd649800b211421d4b48d61e01988e9a98b4f274a2eb",
+   "md5": "3226b4c5ab4b77e7a9dde07f797a5f88",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\Asian (East)\\women\\id08139\\00067.mp4",
+   "original_label": "FakeVideo-RealAudio",
+   "split": "fusion_val",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  },
+  {
+   "rel_path": "RealVideo-FakeAudio\\Asian (East)\\men\\id06776\\00021.mp4",
+   "sha256": "48db7c8e4b0578e4d15cc33611ee496de62050a45fd7df5ed48efed98d5296f0",
+   "md5": "cda815cbc8a50d5fa854f980a0f431d4",
+   "authentic_source_rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id06776\\00021.mp4",
+   "original_label": "RealVideo-FakeAudio",
+   "split": "detector_train",
+   "reason": "byte-identical copy of an authentic RealVideo-RealAudio video filed under a manipulated-media category; not relabelled (the authentic original is already in the manifest with its correct label)"
+  }
+ ]
+}

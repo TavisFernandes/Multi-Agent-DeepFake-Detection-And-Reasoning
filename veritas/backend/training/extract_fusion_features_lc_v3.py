@@ -63,7 +63,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("extract_fusion_features_lc_v3")
 
-MANIFEST_PATH = _HERE / "leakage_controlled_split_manifest.json"
+MANIFEST_PATH = _HERE / "leakage_controlled_split_manifest_v2.json"  # v2 excludes 26 mislabelled copies (dataset_audit/manifest_v2_exclusions.json)
 HISTORICAL_MANIFEST_PATH = _HERE / "pure_identity_disjoint_manifest.json"
 CACHE_OUT_PATH = _HERE / "cache" / "fusion_features_lc_v3.json"
 CACHE_OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
