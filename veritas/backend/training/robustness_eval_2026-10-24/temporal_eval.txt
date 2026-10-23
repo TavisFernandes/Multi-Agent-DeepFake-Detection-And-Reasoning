@@ -1,0 +1,9 @@
+temporal_agent_lc.pth threshold=0.3500
+  original                 AUC=0.9977 real->DEEPFAKE=2/100 fake->AUTHENTIC=1/115 no_face=0
+  jpeg_q30                 AUC=0.7837 real->DEEPFAKE=93/100 fake->AUTHENTIC=0/115 no_face=0
+  jpeg_q60                 AUC=0.9686 real->DEEPFAKE=22/100 fake->AUTHENTIC=4/115 no_face=0
+  down_x0.5                AUC=0.9705 real->DEEPFAKE=69/100 fake->AUTHENTIC=0/115 no_face=0
+  blur_s1.5                AUC=0.7777 real->DEEPFAKE=99/100 fake->AUTHENTIC=0/115 no_face=0
+  720p_face25              AUC=0.9436 real->DEEPFAKE=19/100 fake->AUTHENTIC=13/115 no_face=0
+  h264_crf32               AUC=0.7167 real->DEEPFAKE=7/100 fake->AUTHENTIC=85/115 no_face=0
+  720p_face25_h264_crf28   AUC=0.7675 real->DEEPFAKE=13/100 fake->AUTHENTIC=60/115 no_face=0

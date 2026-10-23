@@ -1,0 +1,36 @@
+spatial_agent_lc.pth
+  original                 AUC=1.0000 Brier=0.0006 real->DEEPFAKE=0/100 fake->AUTHENTIC=0/115 no_face=0
+  jpeg_q30                 AUC=0.6583 Brier=0.4445 real->DEEPFAKE=97/100 fake->AUTHENTIC=2/115 no_face=0
+  jpeg_q60                 AUC=0.8338 Brier=0.3232 real->DEEPFAKE=75/100 fake->AUTHENTIC=0/115 no_face=0
+  down_x0.5                AUC=0.4571 Brier=0.4512 real->DEEPFAKE=98/100 fake->AUTHENTIC=0/115 no_face=0
+  blur_s1.5                AUC=0.4586 Brier=0.4477 real->DEEPFAKE=100/100 fake->AUTHENTIC=0/115 no_face=0
+  h264_crf32               AUC=0.7006 Brier=0.3785 real->DEEPFAKE=16/100 fake->AUTHENTIC=78/115 no_face=0
+  720p_face25              AUC=0.5610 Brier=0.4417 real->DEEPFAKE=98/100 fake->AUTHENTIC=0/115 no_face=0
+  720p_face25_h264_crf28   AUC=0.6465 Brier=0.3692 real->DEEPFAKE=79/100 fake->AUTHENTIC=6/115 no_face=0
+spatial_agent_lc_v2_noaug_s0.pth
+  original                 AUC=1.0000 Brier=0.0008 real->DEEPFAKE=0/100 fake->AUTHENTIC=0/115 no_face=0
+  jpeg_q30                 AUC=0.6710 Brier=0.4474 real->DEEPFAKE=96/100 fake->AUTHENTIC=1/115 no_face=0
+  jpeg_q60                 AUC=0.8924 Brier=0.2877 real->DEEPFAKE=71/100 fake->AUTHENTIC=1/115 no_face=0
+  down_x0.5                AUC=0.6910 Brier=0.4559 real->DEEPFAKE=98/100 fake->AUTHENTIC=0/115 no_face=0
+  blur_s1.5                AUC=0.5029 Brier=0.4629 real->DEEPFAKE=100/100 fake->AUTHENTIC=0/115 no_face=0
+  h264_crf32               AUC=0.7072 Brier=0.4035 real->DEEPFAKE=5/100 fake->AUTHENTIC=90/115 no_face=0
+  720p_face25              AUC=0.9110 Brier=0.3870 real->DEEPFAKE=94/100 fake->AUTHENTIC=0/115 no_face=0
+  720p_face25_h264_crf28   AUC=0.6917 Brier=0.2920 real->DEEPFAKE=45/100 fake->AUTHENTIC=28/115 no_face=0
+spatial_agent_lc_v2_aug_s0.pth
+  original                 AUC=0.9963 Brier=0.0221 real->DEEPFAKE=1/100 fake->AUTHENTIC=5/115 no_face=0
+  jpeg_q30                 AUC=0.9621 Brier=0.0900 real->DEEPFAKE=5/100 fake->AUTHENTIC=26/115 no_face=0
+  jpeg_q60                 AUC=0.9812 Brier=0.0571 real->DEEPFAKE=1/100 fake->AUTHENTIC=14/115 no_face=0
+  down_x0.5                AUC=0.9789 Brier=0.0591 real->DEEPFAKE=5/100 fake->AUTHENTIC=11/115 no_face=0
+  blur_s1.5                AUC=0.9065 Brier=0.1378 real->DEEPFAKE=9/100 fake->AUTHENTIC=31/115 no_face=0
+  h264_crf32               AUC=0.9113 Brier=0.1386 real->DEEPFAKE=8/100 fake->AUTHENTIC=32/115 no_face=0
+  720p_face25              AUC=0.9827 Brier=0.0430 real->DEEPFAKE=8/100 fake->AUTHENTIC=5/115 no_face=0
+  720p_face25_h264_crf28   AUC=0.8663 Brier=0.1734 real->DEEPFAKE=8/100 fake->AUTHENTIC=42/115 no_face=0
+spatial_agent_lc_v2_aug_s1.pth
+  original                 AUC=0.9936 Brier=0.0249 real->DEEPFAKE=1/100 fake->AUTHENTIC=6/115 no_face=0
+  jpeg_q30                 AUC=0.9404 Brier=0.1070 real->DEEPFAKE=3/100 fake->AUTHENTIC=23/115 no_face=0
+  jpeg_q60                 AUC=0.9742 Brier=0.0763 real->DEEPFAKE=2/100 fake->AUTHENTIC=20/115 no_face=0
+  down_x0.5                AUC=0.9603 Brier=0.0861 real->DEEPFAKE=0/100 fake->AUTHENTIC=24/115 no_face=0
+  blur_s1.5                AUC=0.8775 Brier=0.1648 real->DEEPFAKE=2/100 fake->AUTHENTIC=43/115 no_face=0
+  h264_crf32               AUC=0.9125 Brier=0.1330 real->DEEPFAKE=10/100 fake->AUTHENTIC=32/115 no_face=0
+  720p_face25              AUC=0.9822 Brier=0.0350 real->DEEPFAKE=2/100 fake->AUTHENTIC=6/115 no_face=0
+  720p_face25_h264_crf28   AUC=0.8547 Brier=0.1936 real->DEEPFAKE=5/100 fake->AUTHENTIC=52/115 no_face=0
