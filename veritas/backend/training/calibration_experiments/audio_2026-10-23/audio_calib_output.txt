@@ -1,0 +1,13 @@
+fit: fusion_train n=795 (fake audio 331), eval: fusion_val n=215 (fake audio 86); excluded mislabelled copies: 26
+Platt: a=1.6171 b=-0.7362  (p_cal = sigmoid(a*logit(p)+b))
+  raw      Brier=0.0724 ECE=0.1597 AUC=0.9827  real audio called fake@0.5=16/129  fake audio called real@0.5=3/86  real-audio score median=0.192 p90=0.512
+  platt    Brier=0.0455 ECE=0.0728 AUC=0.9827  real audio called fake@0.5=8/129  fake audio called real@0.5=4/86  real-audio score median=0.045 p90=0.341
+  isotonic Brier=0.0283 ECE=0.0372 AUC=0.9819  real audio called fake@0.5=2/129  fake audio called real@0.5=4/86  real-audio score median=0.108 p90=0.125
+
+  decoding variants, real audio called fake@0.5 (of 129) / fake audio called real (of 86):
+   center      raw: 16/0  platt: 8/0  isotonic: 2/0
+   mp3_64k     raw: 20/0  platt: 4/0  isotonic: 0/6
+   aac_64k     raw: 14/0  platt: 6/0  isotonic: 3/3
+   wav44st     raw: 29/0  platt: 12/0  isotonic: 1/0
+   gain-6      raw: 17/0  platt: 7/0  isotonic: 1/3
+   gain+6      raw: 11/0  platt: 7/0  isotonic: 3/1

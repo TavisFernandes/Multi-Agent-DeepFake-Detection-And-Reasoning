@@ -1,0 +1,256 @@
+[
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\African\\women\\id00220\\00027.mp4",
+   "split": "detector_train"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\African\\women\\id00220\\00027.mp4",
+   "split": "detector_train"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\African\\women\\id00460\\00005.mp4",
+   "split": "detector_train"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\African\\women\\id00460\\00005.mp4",
+   "split": "detector_train"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\African\\women\\id00577\\00010.mp4",
+   "split": "final_test"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\African\\women\\id00577\\00010.mp4",
+   "split": "final_test"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\African\\women\\id00592\\00017.mp4",
+   "split": "fusion_train"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\African\\women\\id00592\\00017.mp4",
+   "split": "fusion_train"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\African\\women\\id00829\\00271.mp4",
+   "split": "fusion_train"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\African\\women\\id00829\\00271.mp4",
+   "split": "fusion_train"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\African\\women\\id01532\\00065.mp4",
+   "split": "detector_train"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\African\\women\\id01532\\00065.mp4",
+   "split": "detector_train"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\African\\women\\id01661\\00059.mp4",
+   "split": "fusion_train"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\African\\women\\id01661\\00059.mp4",
+   "split": "fusion_train"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\African\\women\\id01783\\00015.mp4",
+   "split": "detector_train"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\African\\women\\id01783\\00015.mp4",
+   "split": "detector_train"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\African\\women\\id02617\\00028.mp4",
+   "split": "detector_val"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\African\\women\\id02617\\00028.mp4",
+   "split": "detector_val"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id03965\\00051.mp4",
+   "split": "detector_train"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id03965\\00051.mp4",
+   "split": "detector_train"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id04789\\002121.mp4",
+   "split": "detector_train"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id04789\\002121.mp4",
+   "split": "detector_train"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id05268\\00010.mp4",
+   "split": "detector_train"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id05268\\00010.mp4",
+   "split": "detector_train"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id05332\\00065.mp4",
+   "split": "fusion_val"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id05332\\00065.mp4",
+   "split": "fusion_val"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id05383\\00015.mp4",
+   "split": "detector_train"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id05383\\00015.mp4",
+   "split": "detector_train"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id06152\\06152.mp4",
+   "split": "detector_val"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id06152\\06152.mp4",
+   "split": "detector_val"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id06591\\00021.mp4",
+   "split": "fusion_train"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id06591\\00021.mp4",
+   "split": "fusion_train"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id06594\\00002.mp4",
+   "split": "detector_train"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id06594\\00002.mp4",
+   "split": "detector_train"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id06776\\00021.mp4",
+   "split": "detector_train"
+  },
+  {
+   "rel_path": "RealVideo-FakeAudio\\Asian (East)\\men\\id06776\\00021.mp4",
+   "split": "detector_train"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id06776\\00021.mp4",
+   "split": "detector_train"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id06807\\00015.mp4",
+   "split": "fusion_val"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id06807\\00015.mp4",
+   "split": "fusion_val"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id06878\\00001.mp4",
+   "split": "fusion_train"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id06878\\00001.mp4",
+   "split": "fusion_train"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id07338\\00003.mp4",
+   "split": "fusion_val"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id07338\\00003.mp4",
+   "split": "fusion_val"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id08613\\00074.mp4",
+   "split": "detector_train"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id08613\\00074.mp4",
+   "split": "detector_train"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\men\\id08652\\00006.mp4",
+   "split": "detector_train"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\Asian (East)\\men\\id08652\\00006.mp4",
+   "split": "detector_train"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\women\\id07901\\00040.mp4",
+   "split": "detector_train"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\Asian (East)\\women\\id07901\\00040.mp4",
+   "split": "detector_train"
+  }
+ ],
+ [
+  {
+   "rel_path": "FakeVideo-RealAudio\\Asian (East)\\women\\id08139\\00067.mp4",
+   "split": "fusion_val"
+  },
+  {
+   "rel_path": "RealVideo-RealAudio\\Asian (East)\\women\\id08139\\00067.mp4",
+   "split": "fusion_val"
+  }
+ ]
+]
