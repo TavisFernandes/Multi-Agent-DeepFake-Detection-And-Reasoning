@@ -5,7 +5,7 @@ Derives leakage_controlled_split_manifest_v2.json from v1 by excluding manipulat
 byte-identical copies of an authentic RealVideo-RealAudio video (see dataset_audit/duplicate_label_audit.md).
 
 Reproducible: hashes every .mp4 under the dataset root (MD5/SHA-256 only where file sizes collide), so rerunning
-on the same data rewrites both outputs byte-for-byte. v1 and the source videos are only read, never modified.
+on the same data rewrites both outputs byte-for-byte on any platform (CRLF, pinned in .gitattributes). v1 and the source videos are only read, never modified.
 
 Outputs:
   leakage_controlled_split_manifest_v2.json      eligible model-development clips
@@ -60,7 +60,7 @@ def clip_rows(manifest):
                 yield split, cat, c
 
 
-def main():
+def main(v2_path=V2_PATH, exclusions_path=EXCLUSIONS_PATH):
     v1_bytes = V1_PATH.read_bytes()
     v1 = json.loads(v1_bytes)
     root = Path(v1["metadata"]["dataset_root"])
@@ -122,15 +122,16 @@ def main():
         "byte_identical_groups_scanned": len(groups),
     })
 
-    EXCLUSIONS_PATH.write_text(json.dumps({
+    # CRLF: the form v2 was first written in on Windows; .gitattributes pins that checkout form.
+    exclusions_path.write_text(json.dumps({
         "manifest": v2["metadata"]["manifest_name"],
         "derived_from": v2["metadata"]["derived_from"],
         "dataset_root": str(root),
         "method": "SHA-256 of every .mp4 under dataset_root whose file size collides with another; "
                   "groups containing a RealVideo-RealAudio file exclude every other member listed in v1",
         "exclusions": exclusions,
-    }, indent=1) + "\n", encoding="utf-8")
-    V2_PATH.write_text(json.dumps(v2, indent=1) + "\n", encoding="utf-8")
+    }, indent=1) + "\n", encoding="utf-8", newline="\r\n")
+    v2_path.write_text(json.dumps(v2, indent=1) + "\n", encoding="utf-8", newline="\r\n")
 
     print(f"byte-identical groups: {len(groups)}  excluded: {len(exclusions)}  {v2['metadata']['excluded_by_split']}")
     for split, s in v2["summary"].items():

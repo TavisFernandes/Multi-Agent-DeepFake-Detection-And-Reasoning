@@ -1,2 +1,21 @@
 veritas/backend/models/*.pth filter=lfs diff=lfs merge=lfs -text
 veritas/backend/models/*.pth filter=lfs diff=lfs merge=lfs -text
+
+# Files whose SHA-256 is recorded (independent_evaluation_protocol.md, manifest metadata): pin the checkout
+# line endings to the form each hash was taken from, so the recorded hashes hold on every platform.
+# Blobs are stored LF either way; these lines only fix what a checkout writes.
+veritas/backend/training/leakage_controlled_split_manifest.json text eol=crlf
+veritas/backend/training/pure_identity_disjoint_manifest.json text eol=crlf
+veritas/backend/training/ppo_v3_record_level_predictions.csv text eol=crlf
+veritas/backend/training/ppo_v3_test_results_recomputed.json text eol=crlf
+veritas/backend/training/ppo_v3_consistency_audit.md text eol=crlf
+veritas/backend/training/leakage_controlled_split_manifest_v2.json text eol=crlf
+veritas/backend/training/dataset_audit/manifest_v2_exclusions.json text eol=crlf
+veritas/backend/training/ppo_decision_contract_report.md text eol=lf
+veritas/backend/training/ppo_decision_contract.schema.json text eol=lf
+veritas/backend/decision_contract.py text eol=lf
+veritas/backend/training/ppo_final_data_integrity_report.md text eol=lf
+veritas/backend/training/ppo_leakage_controlled_validation_report.md text eol=lf
+# New manifests are written LF by their builders.
+veritas/backend/training/leakage_controlled_split_manifest_v3.json text eol=lf
+veritas/backend/training/dataset_audit/manifest_v3_exclusions.json text eol=lf
