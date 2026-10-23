@@ -1,0 +1,16 @@
+# Exact versions of the backend runtime verified on 2026-10-23 (Python 3.14, Windows, CPU).
+# All backend tests pass with these. Install with: python -m pip install -r requirements-lock.txt
+# requirements.txt keeps the loose minimums; this file is the reproducible set.
+fastapi==0.141.1
+starlette==1.6.0
+uvicorn[standard]==0.52.4
+python-multipart==0.0.32
+torch==2.14.0
+torchvision==0.29.0
+torchaudio==2.11.0
+pillow==12.3.0
+numpy==2.5.2
+opencv-python-headless==5.0.0.93
+imageio-ffmpeg==0.6.0
+pytest==9.1.1
+httpx==0.28.1

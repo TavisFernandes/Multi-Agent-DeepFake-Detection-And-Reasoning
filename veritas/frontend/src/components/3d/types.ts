@@ -99,18 +99,18 @@ export const STATIONS: Record<Exclude<StationId, 'overview'>, StationConfig> = {
     position: [6, 0, 4],
     cameraPosition: [6, 2.2, 7.4],
     targetLookAt: [6, 1.2, 4],
-    modelName: 'Cross-Modal Consistency Engine',
+    modelName: 'Cross-Modal Explanation (no model)',
     techDetails: {
       backbone: 'Rule-based & multi-modal correlation verification',
       inputSpec: 'Visual prediction, Audio prediction, container stream metadata',
       targetArtifacts: 'Real-video/fake-audio mismatch, audio-visual divergence',
       productionStatus: 'Deterministic cross-modal verification logic'
     },
-    summary: 'Evaluates the inter-modal relationship between visual and auditory evidence. If a video looks authentic but contains cloned speech (or vice versa), the Context Analyst detects the cross-modal mismatch and elevates the anomaly score.',
+    summary: 'Describes whether the visual and audio scores agree or point in different directions. It restates the other agents’ outputs rather than adding new evidence, so it never votes and never changes the verdict.',
     detectionPrinciples: [
-      'Prevents deceptive mixed-modality attacks (authentic face + cloned voice)',
-      'Contributes only when both visual and auditory streams are verifiable',
-      'Never dilutes single-modality evaluations'
+      'Explanation only: no independent model or evidence',
+      'Shown only when both visual and audio scores exist',
+      'Never changes the fused score or verdict'
     ]
   },
   fusion: {
@@ -125,9 +125,9 @@ export const STATIONS: Record<Exclude<StationId, 'overview'>, StationConfig> = {
     modelName: 'corrected_fixed (Dynamic Denominator Fixed-Weight Fusion)',
     techDetails: {
       backbone: 'Dynamic-denominator normalized multi-agent weighting',
-      inputSpec: 'Spatial (0.40), Temporal (0.30), Audio (0.20), Context (0.10)',
+      inputSpec: 'Visual = Spatial 0.40 : Temporal 0.30; fused = 1 − (1 − visual)(1 − audio)',
       targetArtifacts: 'Score dilution, false authenticity on missing streams',
-      productionStatus: 'Production Default: corrected_fixed (PPO v3 experimental/disabled)'
+      productionStatus: 'Production Default: corrected_fixed (PPO v4 experimental/disabled)'
     },
     summary: 'The central intelligence nexus of VERITAS. Fuses evidence from all contributing neural agents using dynamic-denominator normalization, guaranteeing that missing modalities never artificially lower the fake score or generate false authentic decisions.',
     detectionPrinciples: [

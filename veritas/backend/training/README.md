@@ -1,4 +1,44 @@
-# VERITAS — Retraining the Agents on FakeAVCeleb (Kaggle GPU)
+# VERITAS — Training and Evaluation
+
+## Current pipeline: leakage-controlled (`*_lc`) — what production loads
+
+Production loads `spatial_agent_lc.pth`, `temporal_agent_lc.pth` and `audio_agent_lc.pth`; `ppo` mode loads
+`ppo_fusion_policy_v4.pth`. All of them come from the 5-way identity-disjoint split in
+`leakage_controlled_split_manifest.json` (detector_train / detector_val / fusion_train / fusion_val / final_test).
+
+**Environment:** `pip install -r ../requirements-lock.txt -r ../requirements-training.txt`.
+Detector training needs a CUDA build of torch (the locked one is CPU-only); PPO and evaluation run on CPU.
+
+**Paths (not yet configurable):** the manifest stores absolute paths under
+`D:\VERITAS_TRAINING\data\FakeAVCeleb_v1.2\FakeAVCeleb_v1.2`, and `train_temporal_lc.py`, `train_audio_lc.py`
+and `extract_fusion_features_lc_v3.py` cache to `D:\VERITAS_TRAINING\{temporal_cache,wav_cache}`.
+Another machine must use the same layout until these become settings.
+
+**Missing:** the script that generated `leakage_controlled_split_manifest.json` is not in the repo, so the
+split can be reused but not regenerated. See `dataset_audit/duplicate_label_audit.md` for 26 known
+mislabelled clips in it.
+
+Run from `veritas/backend/training/`, in order:
+
+```bash
+python train_spatial_lc.py           # -> models/spatial_agent_lc.pth   (selected on detector_val)
+python train_temporal_lc.py          # -> models/temporal_agent_lc.pth  (selected on detector_val)
+python train_audio_lc.py             # -> models/audio_agent_lc.pth     (selected on detector_val)
+python extract_fusion_features_lc_v3.py   # -> cache/fusion_features_lc_v3.json (out-of-sample scores)
+python train_ppo_v3.py --seed 2 --epochs 300 --out ../models/ppo_fusion_policy_v4.pth
+```
+
+The detector scripts and `train_ppo_v3.py` without `--out` **overwrite** their default checkpoint; pass a new
+name (PPO) or copy the existing file aside first (detectors). Use `fusion_val` for every choice; `final_test`
+has been scored repeatedly and must not be used for tuning.
+
+---
+
+# Legacy: Retraining the Agents on FakeAVCeleb (Kaggle GPU)
+
+> These produced the pre-October checkpoints (`spatial_agent.pth`, `temporal_agent_checkpoint.pth`,
+> `audio_agent_checkpoint.pth`). Their "identity-aware" split groups by the race folder, not the identity,
+> so they are kept for reference only.
 
 These scripts retrain the three neural agents on the FakeAVCeleb dataset. They are
 written for a **Kaggle Notebook with a GPU** (T4 or P100) because:

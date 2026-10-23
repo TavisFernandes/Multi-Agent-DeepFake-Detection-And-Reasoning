@@ -1,0 +1,4 @@
+# Extra packages for training/ and the evaluation scripts (on top of requirements-lock.txt).
+# scikit-learn is imported by every train_*_lc.py, extract_fusion_features_lc_v3.py and the evaluators.
+# 1.5.2 is the version (in a Python 3.10 env) that produced the existing evaluation results.
+scikit-learn==1.5.2

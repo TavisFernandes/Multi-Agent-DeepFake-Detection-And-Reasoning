@@ -15,21 +15,15 @@ This is the exact signal FakeAVCeleb's category taxonomy encodes:
     FakeVideo-RealAudio  → visual FAKE, audio REAL   (mismatch → manipulated)
     FakeVideo-FakeAudio  → both modalities agree FAKE
 
-Decision logic
---------------
-- If fewer than two modalities produced a definitive verdict (is_fake not None),
-  context cannot reason about consistency → returns is_fake=None (contributes
-  zero to fusion, exactly like the old stub). This keeps image-only and
-  audio-only uploads unaffected.
-- If both a visual verdict and an audio verdict exist:
-    * agreement (both fake or both real) → context confidence tracks the shared
-      direction, mildly reinforcing the consensus.
-    * disagreement → context flags manipulation (is_fake=True) with confidence
-      scaled by how strongly the two modalities diverge.
-
-The returned dict keeps the same shape the frontend and fusion already expect
-(agent/color/confidence/is_fake/finding), so no downstream changes are needed
-beyond passing the upstream results in.
+Explanation only
+----------------
+The agent only re-describes the other agents' scores, so it adds no independent
+evidence (on fusion_val, adding the visual–audio gap to a logistic fusion moved
+ROC-AUC 0.9844 → 0.9852). It therefore never votes: is_fake is always None,
+status is "explanation" when it can describe the scores, and confidence carries
+the visual–audio score gap |P_visual − P_audio| (not a fake probability).
+- Fewer than two modalities → "not_applicable", nothing to compare.
+- Both available → a neutral description of whether the scores agree.
 """
 
 from typing import Optional
@@ -73,7 +67,7 @@ def context_agent_result(
     audio_result: Optional[dict] = None,
 ) -> dict:
     """
-    Cross-modal consistency verdict.
+    Explanation-only description of visual vs audio agreement (never votes).
 
     Parameters
     ----------
@@ -83,8 +77,7 @@ def context_agent_result(
 
     Returns
     -------
-    dict with the standard agent shape. is_fake is None (zero fusion weight)
-    unless BOTH a visual and an audio verdict are available.
+    dict with the standard agent shape; is_fake is always None.
     """
     # Called with no context (e.g. legacy callers) → behave like the old stub.
     if spatial_result is None and temporal_result is None and audio_result is None:
@@ -112,50 +105,17 @@ def context_agent_result(
             )
         return _unavailable(reason)
 
-    visual_fake = visual_p >= 0.5
-    audio_fake  = audio_p >= 0.5
-    divergence  = abs(visual_p - audio_p)   # 0 (identical) … 1 (opposite)
-
-    if visual_fake != audio_fake:
-        # Modalities disagree → hallmark of a partially-manipulated sample
-        # (e.g. genuine face dubbed with synthetic audio, or vice-versa).
-        confidence = round(min(0.5 + divergence / 2.0, 0.99), 4)
-        v_word = "manipulated" if visual_fake else "authentic"
-        a_word = "synthetic"   if audio_fake  else "authentic"
-        finding = (
-            f"Cross-modal inconsistency detected: the visual stream appears {v_word} "
-            f"(P={visual_p:.0%}) while the audio stream appears {a_word} (P={audio_p:.0%}). "
-            f"This modality mismatch is a strong indicator of partial manipulation."
-        )
-        return {
-            "agent":      _AGENT_NAME,
-            "status":     "trained",
-            "color":      _COLOR,
-            "confidence": confidence,
-            "is_fake":    True,
-            "finding":    finding,
-        }
-
-    # Modalities agree — reinforce the shared direction.
-    agreed_p = (visual_p + audio_p) / 2.0
-    confidence = round(agreed_p, 4)
-    if visual_fake:
-        finding = (
-            f"Cross-modal agreement: both visual (P={visual_p:.0%}) and audio "
-            f"(P={audio_p:.0%}) streams indicate manipulation. Consistent evidence "
-            f"of a fully synthetic sample."
-        )
-    else:
-        finding = (
-            f"Cross-modal agreement: both visual (P={visual_p:.0%}) and audio "
-            f"(P={audio_p:.0%}) streams appear authentic. No inter-modal "
-            f"inconsistencies detected."
-        )
+    divergence = abs(visual_p - audio_p)   # 0 (identical) … 1 (opposite)
+    direction = "point the same way" if (visual_p >= 0.5) == (audio_p >= 0.5) else "point in different directions"
     return {
         "agent":      _AGENT_NAME,
-        "status":     "trained",
+        "status":     "explanation",
         "color":      _COLOR,
-        "confidence": confidence,
-        "is_fake":    bool(visual_fake),
-        "finding":    finding,
+        "confidence": round(divergence, 4),
+        "is_fake":    None,
+        "finding":    (
+            f"The visual score ({visual_p:.0%}) and audio score ({audio_p:.0%}) {direction}, "
+            f"a gap of {divergence:.0%}. This restates the other models' outputs; "
+            f"it is not separate evidence and does not change the verdict."
+        ),
     }

@@ -54,7 +54,7 @@ const AGENT_INFO = [
   { name: 'Spatial', model: 'EfficientNet-B0', checks: 'Face boundaries, blending seams and pixel artifacts in a frame.' },
   { name: 'Temporal', model: 'R3D-18', checks: 'Flicker and landmark jitter across a 16-frame window.' },
   { name: 'Audio', model: 'Mel-spectrogram CNN', checks: 'Vocoder artifacts across 128 mel bands of the soundtrack.' },
-  { name: 'Context', model: 'Cross-modal check', checks: 'Whether what you see and what you hear agree.' },
+  { name: 'Context', model: 'Explanation only', checks: 'Describes whether the visual and audio scores agree. It does not vote.' },
 ];
 
 // Mirrors the backend, which routes files by extension (main.py _detect_media_type).
@@ -445,6 +445,10 @@ export default function Console() {
               onDownload={downloadReport}
             />
 
+            <p className="text-sm text-ink/60">
+              Each card is one model’s own reading. Only the fused score above decides the verdict, so a card can lean
+              the other way.
+            </p>
             <div className="grid gap-4 md:grid-cols-2">
               {agents.map((ag, idx) => (
                 <AgentCard key={ag.agent} agent={ag} index={idx} analysing={analysing} weight={verdict?.dynamic_weights} />
@@ -670,9 +674,10 @@ function AgentCard({
   const [showHeatmap, setShowHeatmap] = useState(false);
   const info = AGENT_INFO[index];
   const isPending = agent.status === 'pending';
-  const isUnavailable = !isPending && (agent.is_fake === null || agent.is_fake === undefined || UNAVAILABLE_STATUSES.includes(agent.backend_status ?? ''));
-  // Each agent has its own calibrated threshold (temporal uses 0.05), so colour by its call, not the fused bands.
-  const tone = agent.is_fake ? { text: 'text-rose-700', bar: 'bg-rose-500' } : { text: 'text-emerald-700', bar: 'bg-emerald-500' };
+  const isExplanation = agent.backend_status === 'explanation';
+  const isUnavailable = !isPending && !isExplanation && (agent.is_fake === null || agent.is_fake === undefined || UNAVAILABLE_STATUSES.includes(agent.backend_status ?? ''));
+  // Neutral on purpose: a single model's score is a signal, not a decision, so it must not be coloured as one.
+  const tone = { text: 'text-ink/70', bar: 'bg-ink/40' };
   const counted = Object.entries(weight ?? {}).find(([k]) => k.toLowerCase().includes(info.name.toLowerCase()))?.[1];
 
   const label = isPending ? (analysing ? 'Analysing' : 'Waiting') : isUnavailable ? 'Skipped' : 'Reported';
@@ -719,7 +724,10 @@ function AgentCard({
       {!isPending && !isUnavailable && (
         <div>
           <div className="mb-1.5 flex justify-between text-xs">
-            <span className="text-ink/55">Fake probability{counted !== undefined && `, counted at ${pct(counted)}`}</span>
+            <span className="text-ink/55">
+              {isExplanation ? 'Visual–audio score gap' : 'This model’s fake probability'}
+              {counted !== undefined && `, counted at ${pct(counted)}`}
+            </span>
             <span className={`font-mono ${tone.text}`}>{pct(agent.confidence)}</span>
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-ink/[0.07]">

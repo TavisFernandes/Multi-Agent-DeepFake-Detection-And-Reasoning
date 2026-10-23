@@ -21,10 +21,21 @@ def test_oversized_upload_is_rejected_with_413(route):
     pattern = os.path.join(tempfile.gettempdir(), f"*{SUFFIX}")
     before = set(glob.glob(pattern))
     client = TestClient(app)  # no `with`: skip startup model loading, it isn't needed here
-    res = client.post(route, files={"file": (f"big{SUFFIX}", TOO_BIG)})
+    # The hint gets past the 415 type check; the odd suffix still names the temp file so leaks are detectable.
+    res = client.post(route, files={"file": (f"big{SUFFIX}", TOO_BIG)}, data={"media_type": "video"})
     assert res.status_code == 413
     assert res.json()["detail"] == "File exceeds 50MB limit."
     assert set(glob.glob(pattern)) == before  # no temp file leaked
+
+
+@pytest.mark.parametrize("route", ["/analyse", "/analyse/stream"])
+def test_unknown_file_type_is_rejected_with_415(route):
+    pattern = os.path.join(tempfile.gettempdir(), "*.xyz")
+    before = set(glob.glob(pattern))
+    res = TestClient(app).post(route, files={"file": ("notes.xyz", b"not media")})
+    assert res.status_code == 415
+    assert "Unsupported file type '.xyz'" in res.json()["detail"]
+    assert set(glob.glob(pattern)) == before  # rejected before anything is written
 
 
 def test_oversized_content_length_is_rejected_before_the_body_is_read():

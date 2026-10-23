@@ -1,7 +1,7 @@
 """
 test_context_agent.py
 
-Verifies the cross-modal consistency context agent (mock_agents.context_agent_result)
+Verifies the explanation-only context agent (mock_agents.context_agent_result)
 and its interaction with the fusion logic in main._compute_verdict.
 """
 import sys, io
@@ -43,44 +43,34 @@ r = context_agent_result(na("Spatial Analysis"), na("Temporal Analysis"), audio(
 assert r["is_fake"] is None, f"audio-only with N/A visual must be unavailable, got {r['is_fake']}"
 print("[PASS] audio-only (spatial/temporal N/A) → is_fake=None")
 
-# 4. Agreement, both FAKE → context FAKE, confidence ≈ mean
-r = context_agent_result(spatial(0.9, True), temporal(0.8, True), audio(0.9, True))
-assert r["is_fake"] is True, r
-assert 0.8 <= r["confidence"] <= 0.95, r["confidence"]
-print(f"[PASS] both-fake agreement → is_fake=True conf={r['confidence']}")
-
-# 5. Agreement, both REAL → context REAL
-r = context_agent_result(spatial(0.05, False), temporal(0.03, False), audio(0.1, False))
-assert r["is_fake"] is False, r
-assert r["confidence"] < 0.2, r["confidence"]
-print(f"[PASS] both-real agreement → is_fake=False conf={r['confidence']}")
-
-# 6. Mismatch: real video, fake audio (RealVideo-FakeAudio) → FLAG manipulation
-r = context_agent_result(spatial(0.1, False), temporal(0.05, False), audio(0.95, True))
-assert r["is_fake"] is True, f"mismatch must flag fake, got {r}"
-assert r["confidence"] > 0.5, r["confidence"]
-assert "inconsistency" in r["finding"].lower()
-print(f"[PASS] real-video/fake-audio mismatch → is_fake=True conf={r['confidence']}")
-
-# 7. Mismatch: fake video, real audio (FakeVideo-RealAudio) → FLAG manipulation
-r = context_agent_result(spatial(0.92, True), temporal(0.88, True), audio(0.08, False))
-assert r["is_fake"] is True, r
-assert r["confidence"] > 0.5
-print(f"[PASS] fake-video/real-audio mismatch → is_fake=True conf={r['confidence']}")
-
-# 8. Fusion integration: context now contributes a 4th weighted vote.
-#    Video with all four agents present and agreeing FAKE.
-agents = [
-    spatial(0.9, True), temporal(0.85, True), audio(0.8, True),
-    context_agent_result(spatial(0.9, True), temporal(0.85, True), audio(0.8, True)),
+# 4-7. Both modalities present → explanation only: never votes, confidence is the score gap.
+cases = [
+    ("both-fake agreement", spatial(0.9, True), temporal(0.8, True), audio(0.9, True), "same way"),
+    ("both-real agreement", spatial(0.05, False), temporal(0.03, False), audio(0.1, False), "same way"),
+    ("real-video/fake-audio", spatial(0.1, False), temporal(0.05, False), audio(0.95, True), "different directions"),
+    ("fake-video/real-audio", spatial(0.92, True), temporal(0.88, True), audio(0.08, False), "different directions"),
 ]
-conf, verdict, contributing, unavailable = _compute_verdict(agents)
-assert verdict == "DEEPFAKE", verdict
-assert "Context Verification" in contributing, "context must contribute when both modalities present"
-assert unavailable == [], unavailable
-print(f"[PASS] fusion: 4-agent DEEPFAKE conf={conf} contributing={len(contributing)}")
+for name, s_, t_, a_, words in cases:
+    r = context_agent_result(s_, t_, a_)
+    visual = (0.4 * s_["confidence"] + 0.3 * t_["confidence"]) / 0.7
+    assert r["is_fake"] is None, f"{name}: context must never vote, got {r}"
+    assert r["status"] == "explanation", r
+    assert abs(r["confidence"] - abs(visual - a_["confidence"])) < 1e-3, r["confidence"]
+    assert words in r["finding"] and "not separate evidence" in r["finding"], r["finding"]
+    assert "strong indicator" not in r["finding"].lower()
+    print(f"[PASS] {name} → explanation, gap={r['confidence']}")
 
-# 9. Fusion integration: image input → context unavailable, must NOT dilute.
+# 8. Fusion: the context result never changes the verdict or score, and is never listed as a contributor.
+for mode in ("corrected_fixed", "ppo", "legacy"):
+    for _, s_, t_, a_, _ in cases:
+        base = _compute_verdict([s_, t_, a_], "video", mode_override=mode)
+        with_ctx = _compute_verdict([s_, t_, a_, context_agent_result(s_, t_, a_)], "video", mode_override=mode)
+        assert with_ctx[:2] == base[:2], f"{mode}: context changed the result {base[:2]} -> {with_ctx[:2]}"
+        if mode != "legacy":  # legacy lists every agent it is given; it is a frozen historical baseline
+            assert "Context Verification" not in with_ctx[2] + with_ctx[3], with_ctx
+print("[PASS] fusion: context never changes verdict/score (corrected_fixed, ppo, legacy)")
+
+# 9. Fusion integration: image input → context not applicable, must NOT dilute.
 agents = [
     spatial(0.63, True), na("Temporal Analysis"), na("Audio Analysis"),
     context_agent_result(spatial(0.63, True), na("Temporal Analysis"), na("Audio Analysis")),
@@ -88,11 +78,11 @@ agents = [
 conf, verdict, contributing, unavailable = _compute_verdict(agents)
 assert conf == 0.63, f"image-only should be spatial-only 0.63, got {conf}"
 assert verdict == "DEEPFAKE", verdict
-assert "Context Verification" in unavailable, "context must be unavailable for image-only"
+assert agents[3]["status"] == "not_applicable"
+assert "Context Verification" not in contributing + unavailable
 print(f"[PASS] fusion: image-only spatial-only conf={conf} (context did not dilute)")
 
-# 10. Fusion integration: audio-only input → Spatial, Temporal, Context all unavailable.
-# Only Audio Analysis (0.85 FAKE) contributes → conf=0.85, DEEPFAKE.
+# 10. Fusion integration: audio-only input → only Audio contributes.
 agents = [
     na("Spatial Analysis"), na("Temporal Analysis"), audio(0.85, True),
     context_agent_result(na("Spatial Analysis"), na("Temporal Analysis"), audio(0.85, True)),
@@ -100,12 +90,9 @@ agents = [
 conf, verdict, contributing, unavailable = _compute_verdict(agents)
 assert conf == 0.85, f"audio-only should be audio-only 0.85, got {conf}"
 assert verdict == "DEEPFAKE", verdict
-assert "Spatial Analysis" not in contributing, "Spatial must NOT be in contributing for audio-only"
-assert "Spatial Analysis" in unavailable, "Spatial must be in unavailable for audio-only"
-assert "Temporal Analysis" in unavailable, "Temporal must be in unavailable for audio-only"
-assert "Context Verification" in unavailable, "Context must be in unavailable for audio-only"
+assert unavailable == ["Spatial Analysis", "Temporal Analysis"], unavailable
 assert contributing == ["Audio Analysis"], f"Only Audio Analysis should contribute, got {contributing}"
-print(f"[PASS] fusion: audio-only audio-only conf={conf} (spatial and context did not dilute)")
+print(f"[PASS] fusion: audio-only conf={conf} (spatial and context did not dilute)")
 
 print("\n" + "=" * 60)
 print("ALL CONTEXT AGENT TESTS PASSED")

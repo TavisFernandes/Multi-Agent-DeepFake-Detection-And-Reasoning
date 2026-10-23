@@ -520,11 +520,7 @@ def apply_action_to_state(
         contributing.append("Audio Analysis")
     else:
         unavailable.append("Audio Analysis")
-
-    if (sp_valid or te_valid) and au_valid:
-        contributing.append("Context Verification")
-    else:
-        unavailable.append("Context Verification")
+    # Context is explanation-only (mock_agents.py), so it is never listed as contributing.
 
     if not contributing:
         verdict = "UNVERIFIED MODALITY"
@@ -641,6 +637,7 @@ class PPOFusionPolicy:
         self.normalizer = FeatureNormalizer(STATE_DIM)
         self.is_loaded = False
         self.checkpoint_metadata: Dict[str, Any] = {}
+        self.checkpoint_path: Optional[Path] = None
 
         # Prefer v4, then v2, then the original v1
         if checkpoint_path:
@@ -684,6 +681,7 @@ class PPOFusionPolicy:
             logger.warning("Normalizer missing from checkpoint; using identity normalizer.")
 
         self.checkpoint_metadata = checkpoint.get("metadata", {})
+        self.checkpoint_path = path
         self.network.eval()
         self.is_loaded = True
         logger.info("PPO Fusion Policy loaded successfully (action_dim=%d).", loaded_action_dim)
@@ -811,10 +809,7 @@ def compute_verdict_corrected_fixed(
         contributing.append("Audio Analysis")
     else:
         unavailable.append("Audio Analysis")
-    if (sp_valid or te_valid) and au_valid:
-        contributing.append("Context Verification")
-    else:
-        unavailable.append("Context Verification")
+    # Context is explanation-only (mock_agents.py), so it is never listed as contributing.
 
     if not contributing:
         details = enrich_decision_fields(

@@ -144,7 +144,7 @@ _WEIGHTS = {
 }
 
 
-def _detect_media_type(filename: str) -> str:
+def _detect_media_type(filename: str) -> str | None:
     ext = Path(filename).suffix.lower()
     if ext in _IMAGE_EXTS:
         return "image"
@@ -152,7 +152,17 @@ def _detect_media_type(filename: str) -> str:
         return "video"
     if ext in _AUDIO_EXTS:
         return "audio"
-    return "image"  # safe default
+    return None
+
+
+def _resolve_media_type(filename: str, hint: str) -> str:
+    """Use a valid hint, else the extension; unknown types get 415 instead of being guessed as images."""
+    hint = hint.strip().lower()
+    resolved = hint if hint in ("image", "video", "audio") else _detect_media_type(filename)
+    if resolved is None:
+        supported = ", ".join(sorted(_IMAGE_EXTS | _VIDEO_EXTS | _AUDIO_EXTS))
+        raise HTTPException(status_code=415, detail=f"Unsupported file type '{Path(filename).suffix or filename}'. Supported: {supported}.")
+    return resolved
 
 
 def _build_summary(
@@ -194,7 +204,7 @@ def _build_summary(
         )
 
     agents_str = ", ".join(contributing)
-    full_consensus = len(contributing) == 4 and not details.get("unavailable_agents")
+    full_consensus = {"Spatial Analysis", "Temporal Analysis", "Audio Analysis"} <= set(contributing) and not details.get("unavailable_agents")
     modality_note = (
         "Multi-agent consensus reached."
         if full_consensus
@@ -615,9 +625,7 @@ async def analyse(
 
     try:
         filename = file.filename or "upload"
-        resolved_media_type = media_type.strip().lower() if media_type.strip() else ""
-        if resolved_media_type not in ("image", "video", "audio"):
-            resolved_media_type = _detect_media_type(filename)
+        resolved_media_type = _resolve_media_type(filename, media_type)
 
         contents = await file.read()
         if len(contents) > 50 * 1024 * 1024:
@@ -684,9 +692,7 @@ async def analyse_stream(
     The Express BFF converts each line into a named SSE event for the frontend.
     """
     filename = file.filename or "upload"
-    resolved_media_type = media_type.strip().lower() if media_type.strip() else ""
-    if resolved_media_type not in ("image", "video", "audio"):
-        resolved_media_type = _detect_media_type(filename)
+    resolved_media_type = _resolve_media_type(filename, media_type)
 
     # Save the upload to a temp file up front so the stream can reference it
     try:

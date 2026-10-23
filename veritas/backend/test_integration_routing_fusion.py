@@ -93,7 +93,7 @@ audio_files = ["speech.wav", "track.mp3", "voice.m4a", "sound.flac"]
 for f in audio_files:
     record(f"Detect audio modality: {f}", _detect_media_type(f) == "audio")
 
-record("Fallback unknown extension to image safe default", _detect_media_type("unknown.xyz") == "image")
+record("Unknown extension is not guessed as image", _detect_media_type("unknown.xyz") is None)
 
 
 # ---------------------------------------------------------------------------

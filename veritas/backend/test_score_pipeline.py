@@ -314,8 +314,8 @@ else:
         ctx_is_fake = ctx_stream.get("is_fake")
         check(ctx_is_fake is None or isinstance(ctx_is_fake, bool),
               "T30: stream Context is_fake is None or a real bool", f"got {ctx_is_fake!r}")
-        check((ctx_stream.get("status") in ("mocked", "not_applicable")) == (ctx_is_fake is None),
-              "T31: stream Context has no verdict exactly when mocked/not_applicable", f"got {ctx_stream.get('status')}")
+        check(ctx_is_fake is None and ctx_stream.get("status") in ("explanation", "not_applicable"),
+              "T31: stream Context never carries a verdict (explanation-only)", f"got {ctx_stream.get('status')} is_fake={ctx_is_fake!r}")
     except Exception as exc:
         fail(f"Proxy transparency check failed: {exc}")
 

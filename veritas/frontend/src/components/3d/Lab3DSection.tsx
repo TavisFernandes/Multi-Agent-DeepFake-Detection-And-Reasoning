@@ -77,7 +77,7 @@ export function Lab3DSection() {
 
             {/* Sub-headline */}
             <p className="text-sm sm:text-base md:text-lg text-zinc-300/90 max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
-              An interactive 3D laboratory inspecting digital media across four neural dimensions: Spatial boundaries, Temporal coherence, Acoustic synthesis, and Cross-modal synchrony.
+              An interactive 3D laboratory inspecting digital media with three neural detectors (spatial boundaries, temporal coherence, acoustic synthesis) and a cross-modal explanation of how they agree.
             </p>
 
             {/* Action Buttons */}

@@ -97,7 +97,7 @@ conf, verdict, contributing, unavailable = _compute_verdict(agents_audio)
 assert "Spatial Analysis" not in contributing, "Spatial must NOT contribute for audio-only input"
 assert "Spatial Analysis" in unavailable, "Spatial must be in unavailable_agents"
 assert "Temporal Analysis" in unavailable
-assert "Context Verification" in unavailable
+assert "Context Verification" not in contributing + unavailable  # explanation-only, never listed
 assert contributing == [], f"No agent should contribute for audio-only with untrained audio, got {contributing}"
 assert verdict == "UNVERIFIED MODALITY"
 assert conf == 0.0
