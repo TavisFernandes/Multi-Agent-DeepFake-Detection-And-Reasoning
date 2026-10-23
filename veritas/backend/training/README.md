@@ -18,7 +18,20 @@ Another machine must use the same layout until these become settings.
 split can be reused but not regenerated. See `dataset_audit/duplicate_label_audit.md` for 26 known
 mislabelled clips in it.
 
-### Manifest v2 (`leakage_controlled_split_manifest_v2.json`) — use this for all model development
+### Manifest v3 (`leakage_controlled_split_manifest_v3.json`) — use this for all model development
+
+`build_manifest_v3.py` derives v3 from v2 so no file is counted twice in a split: 11 FakeVideo-FakeAudio
+files were listed twice because `meta_data.csv` has one row per `method` (8 detector_train, 2 fusion_train,
+1 fusion_val). The first row is kept. Every dropped row is recorded in full in
+`dataset_audit/manifest_v3_exclusions.json`. No byte-identical distinct paths remain within a split.
+Labels are unchanged. The detector trainers, `extract_fusion_features_lc_v3.py` and `train_ppo_v3.py` read v3,
+and `python -m pytest test_manifest_v3.py` checks it. v1 and v2 are kept unchanged.
+
+**Byte reproducibility:** `.gitattributes` pins the checkout line endings of every file with a recorded hash,
+so each hash holds on any platform (`test_reproducibility.py`). v1/v2 check out CRLF, the form their hashes
+were taken in; v3 is LF. Git stores all blobs as LF either way.
+
+### Manifest v2 (`leakage_controlled_split_manifest_v2.json`) — superseded by v3
 
 `build_manifest_v2.py` derives v2 from v1 by excluding the 26 manipulated-labelled files that are
 byte-identical copies of an authentic RealVideo-RealAudio video. Each exclusion (path, SHA-256/MD5,
@@ -26,7 +39,7 @@ authentic source, original label, split, reason) is in `dataset_audit/manifest_v
 Rerunning the script rewrites both files byte-for-byte; `python -m pytest test_manifest_v2.py` checks them.
 The excluded files stay on disk and in v1 for audit, but are **not eligible** training/validation samples;
 they are not relabelled (the authentic original is already in the same split). v1 is kept unchanged.
-The detector trainers, `extract_fusion_features_lc_v3.py` and `train_ppo_v3.py` read v2.
+The loaders read v2 until v3 replaced it.
 
 > **final_test contamination warning.** Every historical final_test result (`leakage_controlled_test_results.json`,
 > `ppo_v3_test_results*.json`, `ppo_v3_record_level_predictions.csv`, `ppo_v3_*_report.md`/`_audit.md`,

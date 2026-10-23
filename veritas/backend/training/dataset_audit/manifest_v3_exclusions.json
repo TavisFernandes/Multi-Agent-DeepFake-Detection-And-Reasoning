@@ -1,0 +1,256 @@
+{
+ "manifest": "leakage_controlled_split_manifest_v3",
+ "derived_from": {
+  "file": "leakage_controlled_split_manifest_v2.json",
+  "sha256": "86db55017d1c8512cdc32c69cea268d82fd85fe5378075106ccfc25ed9e7316c",
+  "v1": {
+   "file": "leakage_controlled_split_manifest.json",
+   "sha256": "86f84ce7948f9e0d1a11b4b90d8cccb00e2a08456abf88227c82c7f9aba932d4"
+  }
+ },
+ "dataset_root": "D:\\VERITAS_TRAINING\\data\\FakeAVCeleb_v1.2\\FakeAVCeleb_v1.2",
+ "exclusions": [
+  {
+   "rel_path": "FakeVideo-FakeAudio\\African\\women\\id00220\\00027_id03658_wavtolip.mp4",
+   "sha256": "40f38149ec15b90b5e185ffa8dcf991ae83f9f944677fa52f3fea55eda0e0791",
+   "md5": "79e05614f0b8d51fb2b23be1eb962113",
+   "split": "detector_train",
+   "label": "FakeVideo-FakeAudio",
+   "duplicate_type": "repeated_row",
+   "canonical_rel_path": "FakeVideo-FakeAudio\\African\\women\\id00220\\00027_id03658_wavtolip.mp4",
+   "removed_row": {
+    "rel_path": "FakeVideo-FakeAudio\\African\\women\\id00220\\00027_id03658_wavtolip.mp4",
+    "full_path": "D:\\VERITAS_TRAINING\\data\\FakeAVCeleb_v1.2\\FakeAVCeleb_v1.2\\FakeVideo-FakeAudio\\African\\women\\id00220\\00027_id03658_wavtolip.mp4",
+    "category": "D",
+    "type": "FakeVideo-FakeAudio",
+    "source": "id00220",
+    "target1": "id03658",
+    "target2": "-",
+    "method": "wav2lip",
+    "race": "African",
+    "gender": "women"
+   },
+   "reason": "same file listed again in the same split (meta_data.csv has one row per method); one occurrence kept, label unchanged"
+  },
+  {
+   "rel_path": "FakeVideo-FakeAudio\\African\\women\\id00460\\00005_id00460_wavtolip.mp4",
+   "sha256": "c1817409f6ea1ce75d9aeeaddd910c687e1ab16f1e36f7c6f600adfff56dee46",
+   "md5": "f153f94312183a89824e8f873af2eb90",
+   "split": "detector_train",
+   "label": "FakeVideo-FakeAudio",
+   "duplicate_type": "repeated_row",
+   "canonical_rel_path": "FakeVideo-FakeAudio\\African\\women\\id00460\\00005_id00460_wavtolip.mp4",
+   "removed_row": {
+    "rel_path": "FakeVideo-FakeAudio\\African\\women\\id00460\\00005_id00460_wavtolip.mp4",
+    "full_path": "D:\\VERITAS_TRAINING\\data\\FakeAVCeleb_v1.2\\FakeAVCeleb_v1.2\\FakeVideo-FakeAudio\\African\\women\\id00460\\00005_id00460_wavtolip.mp4",
+    "category": "D",
+    "type": "FakeVideo-FakeAudio",
+    "source": "id00460",
+    "target1": "id00460",
+    "target2": "-",
+    "method": "wav2lip",
+    "race": "African",
+    "gender": "women"
+   },
+   "reason": "same file listed again in the same split (meta_data.csv has one row per method); one occurrence kept, label unchanged"
+  },
+  {
+   "rel_path": "FakeVideo-FakeAudio\\African\\women\\id01783\\00015_id03569_wavtolip.mp4",
+   "sha256": "881c3e8617d1576e853600de39607170dbebf0e1df73d457132eb4f8279d8a51",
+   "md5": "a7841b5e38a6b6b5098f37bd05d4f880",
+   "split": "detector_train",
+   "label": "FakeVideo-FakeAudio",
+   "duplicate_type": "repeated_row",
+   "canonical_rel_path": "FakeVideo-FakeAudio\\African\\women\\id01783\\00015_id03569_wavtolip.mp4",
+   "removed_row": {
+    "rel_path": "FakeVideo-FakeAudio\\African\\women\\id01783\\00015_id03569_wavtolip.mp4",
+    "full_path": "D:\\VERITAS_TRAINING\\data\\FakeAVCeleb_v1.2\\FakeAVCeleb_v1.2\\FakeVideo-FakeAudio\\African\\women\\id01783\\00015_id03569_wavtolip.mp4",
+    "category": "D",
+    "type": "FakeVideo-FakeAudio",
+    "source": "id01783",
+    "target1": "id03569",
+    "target2": "-",
+    "method": "wav2lip",
+    "race": "African",
+    "gender": "women"
+   },
+   "reason": "same file listed again in the same split (meta_data.csv has one row per method); one occurrence kept, label unchanged"
+  },
+  {
+   "rel_path": "FakeVideo-FakeAudio\\Asian (East)\\men\\id05383\\00015_id05743_wavtolip.mp4",
+   "sha256": "5c0e947a6d1cb04665deb252ed2896bb544a2266d65d3123dfbe78653e89ca14",
+   "md5": "cf346832721227c7adef6538bd671936",
+   "split": "detector_train",
+   "label": "FakeVideo-FakeAudio",
+   "duplicate_type": "repeated_row",
+   "canonical_rel_path": "FakeVideo-FakeAudio\\Asian (East)\\men\\id05383\\00015_id05743_wavtolip.mp4",
+   "removed_row": {
+    "rel_path": "FakeVideo-FakeAudio\\Asian (East)\\men\\id05383\\00015_id05743_wavtolip.mp4",
+    "full_path": "D:\\VERITAS_TRAINING\\data\\FakeAVCeleb_v1.2\\FakeAVCeleb_v1.2\\FakeVideo-FakeAudio\\Asian (East)\\men\\id05383\\00015_id05743_wavtolip.mp4",
+    "category": "D",
+    "type": "FakeVideo-FakeAudio",
+    "source": "id05383",
+    "target1": "id05743",
+    "target2": "-",
+    "method": "wav2lip",
+    "race": "Asian (East)",
+    "gender": "men"
+   },
+   "reason": "same file listed again in the same split (meta_data.csv has one row per method); one occurrence kept, label unchanged"
+  },
+  {
+   "rel_path": "FakeVideo-FakeAudio\\Asian (East)\\men\\id06594\\00002_id00056_wavtolip.mp4",
+   "sha256": "4afd81d081d182fc3ffdee0eaee83f047928dea1eacafbe08d91a5a34f9c879a",
+   "md5": "bb23224dfbe6de565965da82fa18c443",
+   "split": "detector_train",
+   "label": "FakeVideo-FakeAudio",
+   "duplicate_type": "repeated_row",
+   "canonical_rel_path": "FakeVideo-FakeAudio\\Asian (East)\\men\\id06594\\00002_id00056_wavtolip.mp4",
+   "removed_row": {
+    "rel_path": "FakeVideo-FakeAudio\\Asian (East)\\men\\id06594\\00002_id00056_wavtolip.mp4",
+    "full_path": "D:\\VERITAS_TRAINING\\data\\FakeAVCeleb_v1.2\\FakeAVCeleb_v1.2\\FakeVideo-FakeAudio\\Asian (East)\\men\\id06594\\00002_id00056_wavtolip.mp4",
+    "category": "D",
+    "type": "FakeVideo-FakeAudio",
+    "source": "id06594",
+    "target1": "id00056",
+    "target2": "-",
+    "method": "wav2lip",
+    "race": "Asian (East)",
+    "gender": "men"
+   },
+   "reason": "same file listed again in the same split (meta_data.csv has one row per method); one occurrence kept, label unchanged"
+  },
+  {
+   "rel_path": "FakeVideo-FakeAudio\\Asian (East)\\men\\id06776\\00021_id04789_wavtolip.mp4",
+   "sha256": "05b35a3ecf9fe56043dd7cd1250d2a9a0fc78d868a307038b7b159b57582143d",
+   "md5": "35fd518bbdbe002a87b258e422e5f8a5",
+   "split": "detector_train",
+   "label": "FakeVideo-FakeAudio",
+   "duplicate_type": "repeated_row",
+   "canonical_rel_path": "FakeVideo-FakeAudio\\Asian (East)\\men\\id06776\\00021_id04789_wavtolip.mp4",
+   "removed_row": {
+    "rel_path": "FakeVideo-FakeAudio\\Asian (East)\\men\\id06776\\00021_id04789_wavtolip.mp4",
+    "full_path": "D:\\VERITAS_TRAINING\\data\\FakeAVCeleb_v1.2\\FakeAVCeleb_v1.2\\FakeVideo-FakeAudio\\Asian (East)\\men\\id06776\\00021_id04789_wavtolip.mp4",
+    "category": "D",
+    "type": "FakeVideo-FakeAudio",
+    "source": "id06776",
+    "target1": "id04789",
+    "target2": "-",
+    "method": "wav2lip",
+    "race": "Asian (East)",
+    "gender": "men"
+   },
+   "reason": "same file listed again in the same split (meta_data.csv has one row per method); one occurrence kept, label unchanged"
+  },
+  {
+   "rel_path": "FakeVideo-FakeAudio\\Asian (East)\\men\\id08613\\00074_id03965_wavtolip.mp4",
+   "sha256": "9594033e7f5d6e1f4233ca1f283cb1427cdac463067e39eae20f44e1c882829f",
+   "md5": "3223602e015bcc18b576ae3e10949a5d",
+   "split": "detector_train",
+   "label": "FakeVideo-FakeAudio",
+   "duplicate_type": "repeated_row",
+   "canonical_rel_path": "FakeVideo-FakeAudio\\Asian (East)\\men\\id08613\\00074_id03965_wavtolip.mp4",
+   "removed_row": {
+    "rel_path": "FakeVideo-FakeAudio\\Asian (East)\\men\\id08613\\00074_id03965_wavtolip.mp4",
+    "full_path": "D:\\VERITAS_TRAINING\\data\\FakeAVCeleb_v1.2\\FakeAVCeleb_v1.2\\FakeVideo-FakeAudio\\Asian (East)\\men\\id08613\\00074_id03965_wavtolip.mp4",
+    "category": "D",
+    "type": "FakeVideo-FakeAudio",
+    "source": "id08613",
+    "target1": "id03965",
+    "target2": "-",
+    "method": "wav2lip",
+    "race": "Asian (East)",
+    "gender": "men"
+   },
+   "reason": "same file listed again in the same split (meta_data.csv has one row per method); one occurrence kept, label unchanged"
+  },
+  {
+   "rel_path": "FakeVideo-FakeAudio\\Asian (East)\\men\\id08652\\00006_id00056_wavtolip.mp4",
+   "sha256": "1fdf134ab172b34c42106ec17056e76621d103b37014aa2f73013f0f0b3baa7d",
+   "md5": "715af3f9e808d4415526f57918e38cd9",
+   "split": "detector_train",
+   "label": "FakeVideo-FakeAudio",
+   "duplicate_type": "repeated_row",
+   "canonical_rel_path": "FakeVideo-FakeAudio\\Asian (East)\\men\\id08652\\00006_id00056_wavtolip.mp4",
+   "removed_row": {
+    "rel_path": "FakeVideo-FakeAudio\\Asian (East)\\men\\id08652\\00006_id00056_wavtolip.mp4",
+    "full_path": "D:\\VERITAS_TRAINING\\data\\FakeAVCeleb_v1.2\\FakeAVCeleb_v1.2\\FakeVideo-FakeAudio\\Asian (East)\\men\\id08652\\00006_id00056_wavtolip.mp4",
+    "category": "D",
+    "type": "FakeVideo-FakeAudio",
+    "source": "id08652",
+    "target1": "id00056",
+    "target2": "-",
+    "method": "wav2lip",
+    "race": "Asian (East)",
+    "gender": "men"
+   },
+   "reason": "same file listed again in the same split (meta_data.csv has one row per method); one occurrence kept, label unchanged"
+  },
+  {
+   "rel_path": "FakeVideo-FakeAudio\\African\\women\\id00592\\00017_id01661_wavtolip.mp4",
+   "sha256": "4fe4473e5ca411776a6dcf6ce915fc3323f663b79dbedc1b8da658252eadbc13",
+   "md5": "fcb784f31483ea732dfe9dddb605be67",
+   "split": "fusion_train",
+   "label": "FakeVideo-FakeAudio",
+   "duplicate_type": "repeated_row",
+   "canonical_rel_path": "FakeVideo-FakeAudio\\African\\women\\id00592\\00017_id01661_wavtolip.mp4",
+   "removed_row": {
+    "rel_path": "FakeVideo-FakeAudio\\African\\women\\id00592\\00017_id01661_wavtolip.mp4",
+    "full_path": "D:\\VERITAS_TRAINING\\data\\FakeAVCeleb_v1.2\\FakeAVCeleb_v1.2\\FakeVideo-FakeAudio\\African\\women\\id00592\\00017_id01661_wavtolip.mp4",
+    "category": "D",
+    "type": "FakeVideo-FakeAudio",
+    "source": "id00592",
+    "target1": "id01661",
+    "target2": "-",
+    "method": "wav2lip",
+    "race": "African",
+    "gender": "women"
+   },
+   "reason": "same file listed again in the same split (meta_data.csv has one row per method); one occurrence kept, label unchanged"
+  },
+  {
+   "rel_path": "FakeVideo-FakeAudio\\Asian (East)\\men\\id06591\\00021_id06591_wavtolip.mp4",
+   "sha256": "6df087336c43ebe407765014ed8c81691c9babce42737993b6aa864435be702a",
+   "md5": "ab555b19c0434f9a5e0c23cbe9c57b47",
+   "split": "fusion_train",
+   "label": "FakeVideo-FakeAudio",
+   "duplicate_type": "repeated_row",
+   "canonical_rel_path": "FakeVideo-FakeAudio\\Asian (East)\\men\\id06591\\00021_id06591_wavtolip.mp4",
+   "removed_row": {
+    "rel_path": "FakeVideo-FakeAudio\\Asian (East)\\men\\id06591\\00021_id06591_wavtolip.mp4",
+    "full_path": "D:\\VERITAS_TRAINING\\data\\FakeAVCeleb_v1.2\\FakeAVCeleb_v1.2\\FakeVideo-FakeAudio\\Asian (East)\\men\\id06591\\00021_id06591_wavtolip.mp4",
+    "category": "D",
+    "type": "FakeVideo-FakeAudio",
+    "source": "id06591",
+    "target1": "id06591",
+    "target2": "-",
+    "method": "wav2lip",
+    "race": "Asian (East)",
+    "gender": "men"
+   },
+   "reason": "same file listed again in the same split (meta_data.csv has one row per method); one occurrence kept, label unchanged"
+  },
+  {
+   "rel_path": "FakeVideo-FakeAudio\\Asian (East)\\men\\id05332\\00065_id04774_wavtolip.mp4",
+   "sha256": "cecf43b6f5cd9a62aee31863e9f4334bcad9cf76df88f14fb3c59ede11c549b1",
+   "md5": "b33782fed8e946ccdfb756b621477f6e",
+   "split": "fusion_val",
+   "label": "FakeVideo-FakeAudio",
+   "duplicate_type": "repeated_row",
+   "canonical_rel_path": "FakeVideo-FakeAudio\\Asian (East)\\men\\id05332\\00065_id04774_wavtolip.mp4",
+   "removed_row": {
+    "rel_path": "FakeVideo-FakeAudio\\Asian (East)\\men\\id05332\\00065_id04774_wavtolip.mp4",
+    "full_path": "D:\\VERITAS_TRAINING\\data\\FakeAVCeleb_v1.2\\FakeAVCeleb_v1.2\\FakeVideo-FakeAudio\\Asian (East)\\men\\id05332\\00065_id04774_wavtolip.mp4",
+    "category": "D",
+    "type": "FakeVideo-FakeAudio",
+    "source": "id05332",
+    "target1": "id04774",
+    "target2": "-",
+    "method": "wav2lip",
+    "race": "Asian (East)",
+    "gender": "men"
+   },
+   "reason": "same file listed again in the same split (meta_data.csv has one row per method); one occurrence kept, label unchanged"
+  }
+ ]
+}

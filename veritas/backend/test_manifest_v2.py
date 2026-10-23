@@ -1,6 +1,6 @@
 """
 leakage_controlled_split_manifest_v2.json: the 26 mislabelled whole-file copies are not eligible training or
-validation examples, v1 is untouched, and every train/val loader reads v2.
+validation examples and v1 is untouched. (Loaders now read v3: see test_manifest_v3.py.)
 Run: python -m pytest test_manifest_v2.py   (hash checks skip when the dataset is not on disk)
 """
 import hashlib
@@ -48,22 +48,6 @@ def test_v2_is_v1_minus_exclusions():
     for split, s in V2["summary"].items():
         assert s["total_clips"] == sum(map(len, V2["clips"][split].values()))
     assert V2["identities"] == V1["identities"]
-
-
-def test_train_val_loaders_use_v2():
-    import train_audio_lc, train_spatial_lc, train_temporal_lc, extract_fusion_features_lc_v3, train_ppo_v3
-    for mod in (train_audio_lc, train_spatial_lc, train_temporal_lc, extract_fusion_features_lc_v3, train_ppo_v3):
-        assert Path(mod.MANIFEST_PATH).resolve() == b.V2_PATH, mod.__name__
-
-
-def test_ppo_drops_excluded_cache_records():
-    from train_ppo_v3 import eligible_records
-    by_rel = {c["rel_path"]: (s, c["full_path"]) for s, _, c in b.clip_rows(V1)}
-    records = {fp: {"split": s, "full_path": fp, "rel_path": rel} for rel, (s, fp) in by_rel.items()}
-    for split in ("fusion_train", "fusion_val"):
-        kept = {r["rel_path"] for r in eligible_records(records, split)}
-        assert kept and not kept & EXCLUDED
-        assert {r for s, _, r in rows(V2) if s == split} == kept
 
 
 @pytest.mark.skipif(not Path(V2["metadata"]["dataset_root"]).exists(), reason="FakeAVCeleb dataset not on disk")

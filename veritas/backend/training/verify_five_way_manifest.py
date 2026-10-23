@@ -20,7 +20,7 @@ from pathlib import Path
 import torch
 
 _HERE = Path(__file__).resolve().parent
-MANIFEST_PATH = Path(sys.argv[1]) if len(sys.argv) > 1 else _HERE / "leakage_controlled_split_manifest_v2.json"
+MANIFEST_PATH = Path(sys.argv[1]) if len(sys.argv) > 1 else _HERE / "leakage_controlled_split_manifest_v3.json"
 DATASET_ROOT = Path(r"D:\VERITAS_TRAINING\data\FakeAVCeleb_v1.2\FakeAVCeleb_v1.2")
 META_CSV = DATASET_ROOT / "meta_data.csv"
 

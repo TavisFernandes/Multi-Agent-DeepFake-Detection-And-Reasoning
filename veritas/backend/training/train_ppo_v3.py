@@ -63,7 +63,7 @@ logging.basicConfig(
 logger = logging.getLogger("train_ppo_v3")
 
 FEATURES_CACHE_PATH = _HERE / "cache" / "fusion_features_lc_v3.json"
-MANIFEST_PATH = _HERE / "leakage_controlled_split_manifest_v2.json"
+MANIFEST_PATH = _HERE / "leakage_controlled_split_manifest_v3.json"
 CHECKPOINT_OUT = _BACKEND_DIR / "models" / "ppo_fusion_policy_v3.pth"
 
 
