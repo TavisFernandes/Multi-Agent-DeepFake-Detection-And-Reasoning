@@ -188,6 +188,27 @@
   text-wrap: balance;
 }
 
+.hero-title--fixed {
+  white-space: nowrap;
+  text-wrap: nowrap;
+}
+
+.type-caret {
+  display: inline-block;
+  width: 0.06em;
+  height: 0.85em;
+  margin-left: 0.04em;
+  vertical-align: -0.05em;
+  background: currentColor;
+  animation: caret-blink 1s steps(1) infinite;
+}
+.type-caret--still {
+  animation: none;
+}
+@keyframes caret-blink {
+  50% { opacity: 0; }
+}
+
 /* ── Liquid glass island nav ────────────────────────────────────────────────── */
 
 .liquid-glass {

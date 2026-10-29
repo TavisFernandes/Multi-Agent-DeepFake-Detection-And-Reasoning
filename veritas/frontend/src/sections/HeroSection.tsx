@@ -1,8 +1,38 @@
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import GradientASCII from '@/components/ui/GradientASCII';
 
 const ASCII_COLORS = ['#1e3fd8', '#4f7bff', '#a5d8ff', '#eaf3ff'];
 const EASE = [0.16, 1, 0.3, 1] as const;
+// Media the backend accepts (video, image, speech audio); each reads "Find out if a ___ is real."
+const MEDIA_WORDS = ['video', 'photo', 'voice note', 'selfie', 'podcast clip', 'recording'];
+
+function TypedMedia({ active }: { active: boolean }) {
+  const reduce = useReducedMotion();
+  const [i, setI] = useState(0);
+  const [len, setLen] = useState(MEDIA_WORDS[0].length);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    // Types even under reduced motion: only text changes, nothing moves; the caret just stops blinking.
+    if (!active) return;
+    const word = MEDIA_WORDS[i];
+    const done = !deleting && len === word.length;
+    const t = setTimeout(() => {
+      if (done) setDeleting(true);
+      else if (deleting && len === 0) { setDeleting(false); setI((i + 1) % MEDIA_WORDS.length); }
+      else setLen(len + (deleting ? -1 : 1));
+    }, done ? 1600 : deleting ? 45 : 90);
+    return () => clearTimeout(t);
+  }, [active, i, len, deleting]);
+
+  return (
+    <span aria-hidden="true" className="text-[#1e3fd8]">
+      {MEDIA_WORDS[i].slice(0, len)}
+      <span className={reduce ? 'type-caret type-caret--still' : 'type-caret'} />
+    </span>
+  );
+}
 
 // `ready` is false while the intro overlay is up, so the ASCII decode plays as the reveal.
 export function HeroSection({ ready }: { ready: boolean }) {
@@ -35,9 +65,15 @@ export function HeroSection({ ready }: { ready: boolean }) {
             initial={{ opacity: 0, y: 14 }}
             animate={ready ? { opacity: 1, y: 0 } : undefined}
             transition={{ duration: 1, delay: 0.6, ease: EASE }}
-            className="hero-title max-w-[13ch] text-ink"
+            className="hero-title hero-title--fixed text-ink"
+            aria-label="Find out if a video, photo or voice recording is real."
           >
-            Find out if a video is real.
+            {/* Fixed line breaks so the typed word never re-wraps the headline (no vertical jump). */}
+            <span className="block">Find out if a</span>
+            <span className="block">
+              <TypedMedia active={ready} /> <br className="sm:hidden" />
+              is real.
+            </span>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0 }}
